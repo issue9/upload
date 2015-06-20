@@ -149,10 +149,13 @@ func (u *Upload) Do(field string, w *http.ResponseWriter, r *http.Request) ([]st
 			return nil, err
 		}
 
-		io.Copy(f, file)
+		if _, err = io.Copy(f, file); err != nil {
+			return nil, err
+		}
 
+		// 循环最后关闭所有打开的文件
 		f.Close()
-		file.Close() // for的最后关闭file
+		file.Close()
 	}
 
 	return ret, nil
