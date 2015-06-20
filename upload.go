@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 type Upload struct {
@@ -73,6 +74,8 @@ func (u *Upload) checkSize(file multipart.File) (bool, error) {
 	return size <= u.maxSize, nil
 }
 
+// 招行上传的操作。会检测上传文件是否符合要求，只要有一个文件不符合，就会中断上传。
+// 返回的是相对于u.dir目录的文件名列表。
 func (u *Upload) Do(field string, w *http.ResponseWriter, r *http.Request) ([]string, error) {
 	r.ParseMultipartForm(32 << 20)
 	heads := r.MultipartForm.File[field]
@@ -89,14 +92,17 @@ func (u *Upload) Do(field string, w *http.ResponseWriter, r *http.Request) ([]st
 			return nil, errors.New("包含无效的文件类型")
 		}
 
-		// TODO 两种判断类型，分开
-		if ok, err := u.checkSize(file); !ok || err != nil {
+		ok, err := u.checkSize(file)
+		if err != nil {
+			return nil, err
+		}
+		if !ok {
 			return nil, errors.New("超过最大的文件大小")
 		}
 
-		filename := u.dir + "1" + ext // TODO
-		ret = append(ret, filename)
-		f, err := os.Create(filename)
+		path := time.Now().Format(u.role) + ext
+		ret = append(ret, path)
+		f, err := os.Create(u.dir + path)
 		if err != nil {
 			return nil, err
 		}
