@@ -84,12 +84,12 @@ func New(dir string, maxSize int64, role string, exts ...string) (*Upload, error
 }
 
 // 判断扩展名是否符合要求。
+// 由调用者保证ext参数为小写。
 func (u *Upload) isAllowExt(ext string) bool {
 	if len(ext) == 0 { // 没有扩展名，一律过滤
 		return false
 	}
 
-	ext = strings.ToLower(ext)
 	// 是否为允许的扩展名
 	for _, e := range u.exts {
 		if e == ext {
@@ -132,7 +132,7 @@ func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 			return nil, err
 		}
 
-		ext := filepath.Ext(head.Filename)
+		ext := strings.ToLower(filepath.Ext(head.Filename))
 		if !u.isAllowExt(ext) {
 			return nil, ErrNotAllowExt
 		}

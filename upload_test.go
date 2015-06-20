@@ -30,7 +30,6 @@ func TestUpload_isAllowExt(t *testing.T) {
 	u, err := New("./testdir", 10*1024, "2006/05/04/", "gif", ".png", ".GIF")
 	a.NotError(err).NotNil(u)
 	a.True(u.isAllowExt(".gif"))
-	a.True(u.isAllowExt(".GIF"))
 	a.True(u.isAllowExt(".png"))
 
 	a.False(u.isAllowExt(".TXT"))

@@ -28,12 +28,17 @@ const (
 	Center
 )
 
-// 图片类型扩展名，这些类型可以加水印
-var imageType = []string{
+var ErrUnsupportWatermarkType = errors.New("不支持的水印类型")
+
+// 允许做水印的图片
+var watermarkExts = []string{
 	".gif", ".jpg", ".jpeg", ".png",
 }
 
-// 设置水印，path为水印文件的路径。
+// 设置水印的相关参数。
+// path为水印文件的路径；
+// padding为水印在目标不图像上的留白大小；
+// pos水印的位置。
 func (u *Upload) SetWaterMark(path string, padding int, pos Pos) error {
 	f, err := os.Open(path)
 	if err != nil {
@@ -50,7 +55,7 @@ func (u *Upload) SetWaterMark(path string, padding int, pos Pos) error {
 	case ".gif":
 		img, err = gif.Decode(f)
 	default:
-		return errors.New("不支持的水印文件格式")
+		return ErrUnsupportWatermarkType
 	}
 	if err != nil {
 		return err
@@ -60,18 +65,20 @@ func (u *Upload) SetWaterMark(path string, padding int, pos Pos) error {
 	return nil
 }
 
+// 设置水印的image及位置。
 func (u *Upload) SetWatermarkImage(img image.Image, padding int, pos Pos) {
 	u.wmImage = img
 	u.wmPadding = padding
 	u.wmPos = pos
 }
 
+// 是否允许使用水印。
 func (u *Upload) isAllowWatermark(ext string) bool {
 	if u.wmImage == nil {
 		return false
 	}
 
-	for _, e := range imageType {
+	for _, e := range watermarkExts {
 		if e == ext {
 			return true
 		}
@@ -79,10 +86,12 @@ func (u *Upload) isAllowWatermark(ext string) bool {
 	return false
 }
 
+// 将水印作用于src，并将最终图像保存到dst中。
+// srcExt为src文件的扩展名，由调用者保证其值为全部小写。
 func (u *Upload) saveAsImage(dst io.Writer, src io.Reader, srcExt string) error {
 	var srcImg image.Image
 	var err error
-	switch strings.ToLower(srcExt) {
+	switch srcExt {
 	case ".jpg", ".jpeg":
 		srcImg, err = jpeg.Decode(src)
 	case ".png":
@@ -90,7 +99,7 @@ func (u *Upload) saveAsImage(dst io.Writer, src io.Reader, srcExt string) error 
 	case ".gif":
 		srcImg, err = gif.Decode(src)
 	default:
-		return errors.New("不支持的水印文件格式")
+		return ErrUnsupportWatermarkType
 	}
 	if err != nil {
 		return err
@@ -128,15 +137,14 @@ func (u *Upload) saveAsImage(dst io.Writer, src io.Reader, srcExt string) error 
 	draw.Draw(dstImg, dstImg.Bounds(), srcImg, image.ZP, draw.Src)
 	draw.Draw(dstImg, dstImg.Bounds(), u.wmImage, point, draw.Src)
 
-	switch strings.ToLower(srcExt) {
+	switch srcExt {
 	case ".jpg", ".jpeg":
 		err = jpeg.Encode(dst, dstImg, nil)
 	case ".png":
 		err = png.Encode(dst, dstImg)
 	case ".gif":
 		err = gif.Encode(dst, dstImg, nil)
-	default:
-		return errors.New("不支持的水印文件格式")
+		// default: // 由前一个Switch确保此处没有default的出现。
 	}
 
 	return nil
