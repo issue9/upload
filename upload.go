@@ -6,6 +6,7 @@ package upload
 
 import (
 	"errors"
+	"image"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -13,6 +14,11 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+)
+
+var (
+	ErrNotAllowExt  = errors.New("不允许的文件上传类型")
+	ErrNotAllowSize = errors.New("文件上传大小超过最大设定值或是文件大小为0")
 )
 
 // 创建文件的默认权限，比如Upload.dir若不存在，会使用此权限创建目录。
@@ -24,6 +30,10 @@ type Upload struct {
 	maxSize int64    // 允许的最大文件大小，以byte为单位
 	role    string   // 文件命名方式
 	exts    []string // 允许的扩展名
+
+	wmImage   image.Image // 水印图片
+	wmPadding int         // 水印留的边白
+	wmPos     Pos         // 水印的位置
 }
 
 // 声明一个Upload对象。
@@ -106,12 +116,7 @@ func (u *Upload) isAllowSize(file multipart.File) (bool, error) {
 		return false, errors.New("上传文件时发生未知的错误")
 	}
 
-	return size <= u.maxSize, nil
-}
-
-// 设置水印，file为水印文件的路径，或是在isText为true时，file为水印的文字。
-func (u *Upload) SetWaterMark(file string, isText bool) {
-	// TODO
+	return size > 0 && size <= u.maxSize, nil
 }
 
 // 招行上传的操作。会检测上传文件是否符合要求，只要有一个文件不符合，就会中断上传。
@@ -129,7 +134,7 @@ func (u *Upload) Do(field string, w *http.ResponseWriter, r *http.Request) ([]st
 
 		ext := filepath.Ext(head.Filename)
 		if !u.isAllowExt(ext) {
-			return nil, errors.New("包含无效的文件类型")
+			return nil, ErrNotAllowExt
 		}
 
 		ok, err := u.isAllowSize(file)
@@ -137,7 +142,7 @@ func (u *Upload) Do(field string, w *http.ResponseWriter, r *http.Request) ([]st
 			return nil, err
 		}
 		if !ok {
-			return nil, errors.New("超过最大的文件大小")
+			return nil, ErrNotAllowSize
 		}
 
 		path := time.Now().Format(u.role) + ext
@@ -147,8 +152,14 @@ func (u *Upload) Do(field string, w *http.ResponseWriter, r *http.Request) ([]st
 			return nil, err
 		}
 
-		if _, err = io.Copy(f, file); err != nil {
-			return nil, err
+		if u.isAllowWatermark(ext) {
+			if err = u.saveAsImage(f, file, ext); err != nil {
+				return nil, err
+			}
+		} else {
+			if _, err = io.Copy(f, file); err != nil {
+				return nil, err
+			}
 		}
 
 		// 循环最后关闭所有打开的文件

@@ -2,8 +2,6 @@ upload [![Build Status](https://travis-ci.org/issue9/upload.svg?branch=master)](
 ======
 
 
-```
-
 ### 安装
 
 ```shell
