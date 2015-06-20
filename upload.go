@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -28,7 +29,6 @@ const defaultMode os.FileMode = 0660
 type Upload struct {
 	dir     string   // 上传文件保存的路径根目录
 	maxSize int64    // 允许的最大文件大小，以byte为单位
-	role    string   // 文件命名方式
 	exts    []string // 允许的扩展名
 
 	wmImage   image.Image // 水印图片
@@ -41,7 +41,7 @@ type Upload struct {
 // maxSize 允许上传文件的最大尺寸，单位为byte；
 // role 文件命名规则，格式可参考time.Format()参数；
 // exts 允许的扩展名，若为空，将不允许任何文件上传。
-func New(dir string, maxSize int64, role string, exts ...string) (*Upload, error) {
+func New(dir string, maxSize int64, exts ...string) (*Upload, error) {
 	// 确保所有的后缀名都是以.作为开始符号的。
 	es := make([]string, 0, len(exts))
 	for _, ext := range exts {
@@ -78,7 +78,6 @@ func New(dir string, maxSize int64, role string, exts ...string) (*Upload, error
 	return &Upload{
 		dir:     dir,
 		maxSize: maxSize,
-		role:    role,
 		exts:    es,
 	}, nil
 }
@@ -119,6 +118,11 @@ func (u *Upload) isAllowSize(file multipart.File) (bool, error) {
 	return size > 0 && size <= u.maxSize, nil
 }
 
+func (u *Upload) getDestPath(ext string) string {
+	n := time.Now()
+	return n.Format("2006/01/02/") + strconv.Itoa(n.Nanosecond()) + ext
+}
+
 // 招行上传的操作。会检测上传文件是否符合要求，只要有一个文件不符合，就会中断上传。
 // 返回的是相对于u.dir目录的文件名列表。
 func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
@@ -145,7 +149,7 @@ func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 			return nil, ErrNotAllowSize
 		}
 
-		path := time.Now().Format(u.role) + ext
+		path := u.getDestPath(ext)
 		ret = append(ret, path)
 		f, err := os.Create(u.dir + path)
 		if err != nil {
