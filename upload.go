@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -35,21 +36,20 @@ func New(dir string, maxSize int64, role string, exts ...string) (*Upload, error
 	es := make([]string, 0, len(exts))
 	for _, ext := range exts {
 		if ext[0] != '.' {
-			es = append(es, "."+ext)
-			continue
+			ext = "." + ext
 		}
-		es = append(es, ext)
+		es = append(es, strings.ToLower(ext))
 	}
 
-	// 确保dir最后一个字符为目录分隔符。
+	// 确保dir最后一个字符为目录分隔符。若传递的是一个文件，
+	// 在结尾加个/后，后面的os.Stat会返回错误信息！
 	last := dir[len(dir)-1]
 	if last != '/' && last != filepath.Separator {
 		dir = dir + string(filepath.Separator)
 	}
 
 	// 确保dir目录存在，若不存在则会尝试创建。
-	stat, err := os.Stat(dir)
-	if err != nil && !os.IsExist(err) {
+	if _, err := os.Stat(dir); err != nil && !os.IsExist(err) {
 		if !os.IsNotExist(err) {
 			return nil, err
 		}
@@ -60,12 +60,9 @@ func New(dir string, maxSize int64, role string, exts ...string) (*Upload, error
 		}
 
 		// 创建目录成功，重新获取状态
-		if stat, err = os.Stat(dir); err != nil {
+		if _, err = os.Stat(dir); err != nil {
 			return nil, err
 		}
-	}
-	if !stat.IsDir() {
-		return nil, errors.New("dir不是一个目录")
 	}
 
 	return &Upload{
@@ -77,11 +74,12 @@ func New(dir string, maxSize int64, role string, exts ...string) (*Upload, error
 }
 
 // 判断扩展名是否符合要求。
-func (u *Upload) checkExt(ext string) bool {
+func (u *Upload) isAllowExt(ext string) bool {
 	if len(ext) == 0 { // 没有扩展名，一律过滤
 		return false
 	}
 
+	ext = strings.ToLower(ext)
 	// 是否为允许的扩展名
 	for _, e := range u.exts {
 		if e == ext {
@@ -92,7 +90,7 @@ func (u *Upload) checkExt(ext string) bool {
 }
 
 // 检测文件大小是否符合要求。
-func (u *Upload) checkSize(file multipart.File) (bool, error) {
+func (u *Upload) isAllowSize(file multipart.File) (bool, error) {
 	var size int64
 
 	switch f := file.(type) {
@@ -130,11 +128,11 @@ func (u *Upload) Do(field string, w *http.ResponseWriter, r *http.Request) ([]st
 		}
 
 		ext := filepath.Ext(head.Filename)
-		if !u.checkExt(ext) {
+		if !u.isAllowExt(ext) {
 			return nil, errors.New("包含无效的文件类型")
 		}
 
-		ok, err := u.checkSize(file)
+		ok, err := u.isAllowSize(file)
 		if err != nil {
 			return nil, err
 		}
