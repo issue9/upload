@@ -39,7 +39,6 @@ type Upload struct {
 // 声明一个Upload对象。
 // dir 上传文件的保存目录，若目录不存在，则会尝试创建;
 // maxSize 允许上传文件的最大尺寸，单位为byte；
-// role 文件命名规则，格式可参考time.Format()参数；
 // exts 允许的扩展名，若为空，将不允许任何文件上传。
 func New(dir string, maxSize int64, exts ...string) (*Upload, error) {
 	// 确保所有的后缀名都是以.作为开始符号的。
