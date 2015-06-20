@@ -121,7 +121,7 @@ func (u *Upload) isAllowSize(file multipart.File) (bool, error) {
 
 // 招行上传的操作。会检测上传文件是否符合要求，只要有一个文件不符合，就会中断上传。
 // 返回的是相对于u.dir目录的文件名列表。
-func (u *Upload) Do(field string, w *http.ResponseWriter, r *http.Request) ([]string, error) {
+func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 	r.ParseMultipartForm(32 << 20)
 	heads := r.MultipartForm.File[field]
 	ret := make([]string, len(heads))
