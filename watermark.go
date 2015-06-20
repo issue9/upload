@@ -110,10 +110,10 @@ func (u *Upload) saveAsImage(dst io.Writer, src io.Reader, srcExt string) error 
 	srch := srcImg.Bounds().Dy()
 	switch u.wmPos {
 	case TopLeft:
-		point = image.Point{X: u.wmPadding, Y: u.wmPadding}
+		point = image.Point{X: -u.wmPadding, Y: -u.wmPadding}
 	case TopRight:
 		point = image.Point{
-			X: srcw - u.wmPadding - u.wmImage.Bounds().Dx(),
+			X: srcw - u.wmPadding + u.wmImage.Bounds().Dx(),
 			Y: u.wmPadding,
 		}
 	case BottomLeft:
@@ -135,7 +135,7 @@ func (u *Upload) saveAsImage(dst io.Writer, src io.Reader, srcExt string) error 
 
 	dstImg := image.NewNRGBA64(srcImg.Bounds())
 	draw.Draw(dstImg, dstImg.Bounds(), srcImg, image.ZP, draw.Src)
-	draw.Draw(dstImg, dstImg.Bounds(), u.wmImage, point, draw.Src)
+	draw.Draw(dstImg, dstImg.Bounds(), u.wmImage, point, draw.Over)
 
 	switch srcExt {
 	case ".jpg", ".jpeg":
