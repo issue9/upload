@@ -14,6 +14,7 @@ import (
 	"time"
 )
 
+// Upload用于处理文件上传
 type Upload struct {
 	dir     string   // 上传文件保存的路径根目录
 	maxSize int64    // 允许的最大文件大小，以byte为单位
@@ -21,6 +22,11 @@ type Upload struct {
 	exts    []string // 允许的扩展名
 }
 
+// 声明一个Upload对象。
+// dir 上传文件的保存目录;
+// maxSize 允许上传文件的最大尺寸，单位为byte；
+// role 文件命名规则，格式可参考time.Format()参数；
+// exts 允许的扩展名，若为空，将不允许任何文件上传。
 func New(dir string, maxSize int64, role string, exts ...string) *Upload {
 	es := make([]string, 0, len(exts))
 	for _, ext := range exts {
@@ -72,6 +78,11 @@ func (u *Upload) checkSize(file multipart.File) (bool, error) {
 	}
 
 	return size <= u.maxSize, nil
+}
+
+// 设置水印，file为水印文件的路径，或是在isText为true时，file为水印的文字。
+func (u *Upload) SetWaterMark(file string, isText bool) {
+	// TODO
 }
 
 // 招行上传的操作。会检测上传文件是否符合要求，只要有一个文件不符合，就会中断上传。
