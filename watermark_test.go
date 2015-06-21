@@ -70,7 +70,7 @@ func BenchmarkWater_MakeImage_500xJPEG(b *testing.B) {
 	}
 }
 
-// BenchmarkWater_MakeImage_500xPNG	   50000	     26003 ns/op
+// BenchmarkWater_MakeImage_500xPNG	  500000	      2482 ns/op
 func BenchmarkWater_MakeImage_500xPNG(b *testing.B) {
 	a := assert.New(b)
 
@@ -84,6 +84,6 @@ func BenchmarkWater_MakeImage_500xPNG(b *testing.B) {
 	defer file.Close()
 
 	for i := 0; i < b.N; i++ {
-		w.MarkImage(file, ".jpg")
+		w.MarkImage(file, ".png")
 	}
 }
