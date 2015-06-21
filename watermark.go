@@ -28,7 +28,7 @@ const (
 	Center
 )
 
-var ErrUnsupportWatermarkType = errors.New("不支持的水印类型")
+var ErrUnsupportedWatermarkType = errors.New("不支持的水印类型")
 
 // 允许做水印的图片
 var watermarkExts = []string{
@@ -61,7 +61,7 @@ func NewWatermark(path string, padding int, pos Pos) (*Watermark, error) {
 	case ".gif":
 		img, err = gif.Decode(f)
 	default:
-		return nil, ErrUnsupportWatermarkType
+		return nil, ErrUnsupportedWatermarkType
 	}
 	if err != nil {
 		return nil, err
@@ -98,12 +98,26 @@ func (w *Watermark) isAllowExt(ext string) bool {
 	return false
 }
 
-// 将水印作用于src，并将最终图像保存到dst中。
-// srcExt为src文件的扩展名，由调用者保证其值为全部小写。
-func (w *Watermark) saveAsImage(dst io.Writer, src io.Reader, srcExt string) error {
+// 给指定的文件打上水印
+func (w *Watermark) Mark(path string) error {
+	// 此处不能使用os.O_APPEND 在osx下会造成seek失效。
+	// TODO:验证其它系统的正确性
+	file, err := os.OpenFile(path, os.O_RDWR, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	return w.MarkImage(file, strings.ToLower(filepath.Ext(path)))
+}
+
+// 将水印写入src中，由ext确定当前图片的类型。
+func (w *Watermark) MarkImage(src io.ReadWriteSeeker, ext string) error {
 	var srcImg image.Image
 	var err error
-	switch srcExt {
+
+	var srccp io.Writer = src
+	switch ext {
 	case ".jpg", ".jpeg":
 		srcImg, err = jpeg.Decode(src)
 	case ".png":
@@ -111,7 +125,7 @@ func (w *Watermark) saveAsImage(dst io.Writer, src io.Reader, srcExt string) err
 	case ".gif":
 		srcImg, err = gif.Decode(src)
 	default:
-		return ErrUnsupportWatermarkType
+		return ErrUnsupportedWatermarkType
 	}
 	if err != nil {
 		return err
@@ -149,15 +163,18 @@ func (w *Watermark) saveAsImage(dst io.Writer, src io.Reader, srcExt string) err
 	draw.Draw(dstImg, dstImg.Bounds(), srcImg, image.ZP, draw.Src)
 	draw.Draw(dstImg, dstImg.Bounds(), w.image, point, draw.Over)
 
-	switch srcExt {
+	_, err = src.Seek(0, 0)
+	if err != nil {
+		return err
+	}
+	switch ext {
 	case ".jpg", ".jpeg":
-		err = jpeg.Encode(dst, dstImg, nil)
+		err = jpeg.Encode(srccp, dstImg, nil)
 	case ".png":
-		err = png.Encode(dst, dstImg)
+		err = png.Encode(srccp, dstImg)
 	case ".gif":
-		err = gif.Encode(dst, dstImg, nil)
+		err = gif.Encode(src, dstImg, nil)
 		// default: // 由前一个Switch确保此处没有default的出现。
 	}
-
-	return nil
+	return err
 }

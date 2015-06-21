@@ -151,12 +151,13 @@ func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 			return nil, err
 		}
 
+		if _, err = io.Copy(f, file); err != nil {
+			return nil, err
+		}
+
+		// 水印
 		if u.watermark != nil && u.watermark.isAllowExt(ext) {
-			if err = u.watermark.saveAsImage(f, file, ext); err != nil {
-				return nil, err
-			}
-		} else {
-			if _, err = io.Copy(f, file); err != nil {
+			if err = u.watermark.MarkImage(f, ext); err != nil {
 				return nil, err
 			}
 		}

@@ -5,40 +5,41 @@
 package upload
 
 import (
+	"io"
 	"os"
-	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/issue9/assert"
 )
 
-func saveImage(a *assert.Assertion, u *Upload, dest, src string) error {
+func output(a *assert.Assertion, pos Pos, bgType, waterType string) {
+	water := "./testdata/watermark" + waterType
+	src := "./testdata/background" + bgType
+	dest := "./testdata/output/" + waterType[1:] + bgType
+	// 复制文件到output目录下，并重命名。
 	destFile, err := os.Create(dest)
 	a.NotError(err).NotNil(destFile)
 
 	srcFile, err := os.Open(src)
 	a.NotError(err).NotNil(srcFile)
 
-	ext := strings.ToLower(filepath.Ext(src))
+	n, err := io.Copy(destFile, srcFile)
+	a.NotError(err).True(n > 0)
 
-	return u.watermark.saveAsImage(destFile, srcFile, ext)
+	destFile.Close()
+	srcFile.Close()
+
+	// 添加水印
+	w, err := NewWatermark(water, 10, pos)
+	a.NotError(err).NotNil(w)
+	a.NotError(w.Mark(dest))
 }
 
 func TestUploadWatermark(t *testing.T) {
 	a := assert.New(t)
-	u, err := New("./testdir", 10*1024, "gif", ".png", ".GIF")
-	a.NotError(err).NotNil(u)
 
-	u.SetWaterMark("./testdata/watermark.jpg", 10, TopLeft)
-	saveImage(a, u, "./testdata/output/jpg-jpg.jpg", "./testdata/background.jpg")
-
-	u.SetWaterMark("./testdata/watermark.jpg", 10, TopRight)
-	saveImage(a, u, "./testdata/output/png-jpg.jpg", "./testdata/background.png")
-
-	u.SetWaterMark("./testdata/watermark.png", 10, BottomLeft)
-	saveImage(a, u, "./testdata/output/jpg-png.jpg", "./testdata/background.jpg")
-
-	u.SetWaterMark("./testdata/watermark.png", 10, BottomRight)
-	saveImage(a, u, "./testdata/output/png-png.jpg", "./testdata/background.png")
+	output(a, TopLeft, ".jpg", ".jpg")
+	output(a, TopRight, ".jpg", ".png")
+	output(a, BottomLeft, ".png", ".jpg")
+	output(a, BottomRight, ".png", ".png")
 }
