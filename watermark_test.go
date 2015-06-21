@@ -12,11 +12,8 @@ import (
 	"github.com/issue9/assert"
 )
 
-func output(a *assert.Assertion, pos Pos, bgType, waterType string) {
-	water := "./testdata/watermark" + waterType
-	src := "./testdata/background" + bgType
-	dest := "./testdata/output/" + waterType[1:] + bgType
-	// 复制文件到output目录下，并重命名。
+// 复制文件到output目录下，并重命名。
+func copyBackgroundFile(a *assert.Assertion, dest, src string) {
 	destFile, err := os.Create(dest)
 	a.NotError(err).NotNil(destFile)
 
@@ -28,6 +25,17 @@ func output(a *assert.Assertion, pos Pos, bgType, waterType string) {
 
 	destFile.Close()
 	srcFile.Close()
+}
+
+// 输出各种组合的水印图片。
+// bgExt 表示背景图片的扩展名。
+// water 表示水印图片的扩展名。
+func output(a *assert.Assertion, pos Pos, bgExt, waterExt string) {
+	water := "./testdata/watermark" + waterExt
+	src := "./testdata/background" + bgExt
+	dest := "./testdata/output/" + waterExt[1:] + bgExt
+
+	copyBackgroundFile(a, dest, src)
 
 	// 添加水印
 	w, err := NewWatermark(water, 10, pos)
@@ -42,4 +50,40 @@ func TestUploadWatermark(t *testing.T) {
 	output(a, TopRight, ".jpg", ".png")
 	output(a, BottomLeft, ".png", ".jpg")
 	output(a, BottomRight, ".png", ".png")
+}
+
+// BenchmarkWater_MakeImage_500xJPEG	   50000	     30030 ns/op
+func BenchmarkWater_MakeImage_500xJPEG(b *testing.B) {
+	a := assert.New(b)
+
+	copyBackgroundFile(a, "./testdata/output/bench.jpg", "./testdata/background.jpg")
+
+	w, err := NewWatermark("./testdata/watermark.jpg", 10, TopLeft)
+	a.NotError(err).NotNil(w)
+
+	file, err := os.OpenFile("./testdata/output/bench.jpg", os.O_RDWR, os.ModePerm)
+	a.NotError(err).NotNil(file)
+	defer file.Close()
+
+	for i := 0; i < b.N; i++ {
+		w.MarkImage(file, ".jpg")
+	}
+}
+
+// BenchmarkWater_MakeImage_500xPNG	   50000	     26003 ns/op
+func BenchmarkWater_MakeImage_500xPNG(b *testing.B) {
+	a := assert.New(b)
+
+	copyBackgroundFile(a, "./testdata/output/bench.png", "./testdata/background.png")
+
+	w, err := NewWatermark("./testdata/watermark.png", 10, TopLeft)
+	a.NotError(err).NotNil(w)
+
+	file, err := os.OpenFile("./testdata/output/bench.png", os.O_RDWR, os.ModePerm)
+	a.NotError(err).NotNil(file)
+	defer file.Close()
+
+	for i := 0; i < b.N; i++ {
+		w.MarkImage(file, ".jpg")
+	}
 }
