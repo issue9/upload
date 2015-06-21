@@ -6,7 +6,6 @@ package upload
 
 import (
 	"errors"
-	"image"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -27,13 +26,10 @@ const defaultMode os.FileMode = 0660
 
 // Upload用于处理文件上传
 type Upload struct {
-	dir     string   // 上传文件保存的路径根目录
-	maxSize int64    // 允许的最大文件大小，以byte为单位
-	exts    []string // 允许的扩展名
-
-	wmImage   image.Image // 水印图片
-	wmPadding int         // 水印留的边白
-	wmPos     Pos         // 水印的位置
+	dir       string     // 上传文件保存的路径根目录
+	maxSize   int64      // 允许的最大文件大小，以byte为单位
+	exts      []string   // 允许的扩展名
+	watermark *Watermark // 水印
 }
 
 // 声明一个Upload对象。
@@ -155,8 +151,8 @@ func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 			return nil, err
 		}
 
-		if u.isAllowWatermark(ext) {
-			if err = u.saveAsImage(f, file, ext); err != nil {
+		if u.watermark != nil && u.watermark.isAllowExt(ext) {
+			if err = u.watermark.saveAsImage(f, file, ext); err != nil {
 				return nil, err
 			}
 		} else {

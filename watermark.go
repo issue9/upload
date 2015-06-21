@@ -35,14 +35,20 @@ var watermarkExts = []string{
 	".gif", ".jpg", ".jpeg", ".png",
 }
 
+type Watermark struct {
+	image   image.Image // 水印图片
+	padding int         // 水印留的边白
+	pos     Pos         // 水印的位置
+}
+
 // 设置水印的相关参数。
 // path为水印文件的路径；
 // padding为水印在目标不图像上的留白大小；
 // pos水印的位置。
-func (u *Upload) SetWaterMark(path string, padding int, pos Pos) error {
+func NewWatermark(path string, padding int, pos Pos) (*Watermark, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer f.Close()
 
@@ -55,29 +61,35 @@ func (u *Upload) SetWaterMark(path string, padding int, pos Pos) error {
 	case ".gif":
 		img, err = gif.Decode(f)
 	default:
-		return ErrUnsupportWatermarkType
+		return nil, ErrUnsupportWatermarkType
 	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &Watermark{
+		image:   img,
+		padding: padding,
+		pos:     pos,
+	}, nil
+}
+
+// 设置水印的相关参数。
+// path为水印文件的路径；
+// padding为水印在目标不图像上的留白大小；
+// pos水印的位置。
+func (u *Upload) SetWaterMark(path string, padding int, pos Pos) error {
+	img, err := NewWatermark(path, padding, pos)
 	if err != nil {
 		return err
 	}
 
-	u.SetWatermarkImage(img, padding, pos)
+	u.watermark = img
 	return nil
 }
 
-// 设置水印的image及位置。
-func (u *Upload) SetWatermarkImage(img image.Image, padding int, pos Pos) {
-	u.wmImage = img
-	u.wmPadding = padding
-	u.wmPos = pos
-}
-
-// 是否允许使用水印。
-func (u *Upload) isAllowWatermark(ext string) bool {
-	if u.wmImage == nil {
-		return false
-	}
-
+// 该扩展名的图片是否允许使用水印
+func (w *Watermark) isAllowExt(ext string) bool {
 	for _, e := range watermarkExts {
 		if e == ext {
 			return true
@@ -88,7 +100,7 @@ func (u *Upload) isAllowWatermark(ext string) bool {
 
 // 将水印作用于src，并将最终图像保存到dst中。
 // srcExt为src文件的扩展名，由调用者保证其值为全部小写。
-func (u *Upload) saveAsImage(dst io.Writer, src io.Reader, srcExt string) error {
+func (w *Watermark) saveAsImage(dst io.Writer, src io.Reader, srcExt string) error {
 	var srcImg image.Image
 	var err error
 	switch srcExt {
@@ -108,34 +120,34 @@ func (u *Upload) saveAsImage(dst io.Writer, src io.Reader, srcExt string) error 
 	var point image.Point
 	srcw := srcImg.Bounds().Dx()
 	srch := srcImg.Bounds().Dy()
-	switch u.wmPos {
+	switch w.pos {
 	case TopLeft:
-		point = image.Point{X: -u.wmPadding, Y: -u.wmPadding}
+		point = image.Point{X: -w.padding, Y: -w.padding}
 	case TopRight:
 		point = image.Point{
-			X: -(srcw - u.wmPadding - u.wmImage.Bounds().Dx()),
-			Y: -u.wmPadding,
+			X: -(srcw - w.padding - w.image.Bounds().Dx()),
+			Y: -w.padding,
 		}
 	case BottomLeft:
 		point = image.Point{
-			X: -u.wmPadding,
-			Y: -(srch - u.wmPadding - u.wmImage.Bounds().Dy()),
+			X: -w.padding,
+			Y: -(srch - w.padding - w.image.Bounds().Dy()),
 		}
 	case BottomRight:
 		point = image.Point{
-			X: -(srcw - u.wmPadding - u.wmImage.Bounds().Dx()),
-			Y: -(srch - u.wmPadding - u.wmImage.Bounds().Dy()),
+			X: -(srcw - w.padding - w.image.Bounds().Dx()),
+			Y: -(srch - w.padding - w.image.Bounds().Dy()),
 		}
 	case Center:
 		point = image.Point{
-			X: -(srcw - u.wmPadding - u.wmImage.Bounds().Dx()) / 2,
-			Y: -(srch - u.wmPadding - u.wmImage.Bounds().Dy()) / 2,
+			X: -(srcw - w.padding - w.image.Bounds().Dx()) / 2,
+			Y: -(srch - w.padding - w.image.Bounds().Dy()) / 2,
 		}
 	}
 
 	dstImg := image.NewNRGBA64(srcImg.Bounds())
 	draw.Draw(dstImg, dstImg.Bounds(), srcImg, image.ZP, draw.Src)
-	draw.Draw(dstImg, dstImg.Bounds(), u.wmImage, point, draw.Over)
+	draw.Draw(dstImg, dstImg.Bounds(), w.image, point, draw.Over)
 
 	switch srcExt {
 	case ".jpg", ".jpeg":

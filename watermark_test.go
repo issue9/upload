@@ -22,7 +22,7 @@ func saveImage(a *assert.Assertion, u *Upload, dest, src string) error {
 
 	ext := strings.ToLower(filepath.Ext(src))
 
-	return u.saveAsImage(destFile, srcFile, ext)
+	return u.watermark.saveAsImage(destFile, srcFile, ext)
 }
 
 func TestUploadWatermark(t *testing.T) {
