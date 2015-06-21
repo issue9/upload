@@ -78,7 +78,7 @@ func NewWatermark(path string, padding int, pos Pos) (*Watermark, error) {
 // path为水印文件的路径；
 // padding为水印在目标不图像上的留白大小；
 // pos水印的位置。
-func (u *Upload) SetWaterMark(path string, padding int, pos Pos) error {
+func (u *Upload) SetWatermark(path string, padding int, pos Pos) error {
 	img, err := NewWatermark(path, padding, pos)
 	if err != nil {
 		return err
