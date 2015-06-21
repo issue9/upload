@@ -113,23 +113,23 @@ func (u *Upload) saveAsImage(dst io.Writer, src io.Reader, srcExt string) error 
 		point = image.Point{X: -u.wmPadding, Y: -u.wmPadding}
 	case TopRight:
 		point = image.Point{
-			X: srcw - u.wmPadding + u.wmImage.Bounds().Dx(),
-			Y: u.wmPadding,
+			X: -(srcw - u.wmPadding - u.wmImage.Bounds().Dx()),
+			Y: -u.wmPadding,
 		}
 	case BottomLeft:
 		point = image.Point{
-			X: u.wmPadding,
-			Y: srch - u.wmPadding - u.wmImage.Bounds().Dy(),
+			X: -u.wmPadding,
+			Y: -(srch - u.wmPadding - u.wmImage.Bounds().Dy()),
 		}
 	case BottomRight:
 		point = image.Point{
-			X: srcw - u.wmPadding - u.wmImage.Bounds().Dx(),
-			Y: srch - u.wmPadding - u.wmImage.Bounds().Dy(),
+			X: -(srcw - u.wmPadding - u.wmImage.Bounds().Dx()),
+			Y: -(srch - u.wmPadding - u.wmImage.Bounds().Dy()),
 		}
 	case Center:
 		point = image.Point{
-			X: (srcw - u.wmPadding - u.wmImage.Bounds().Dx()) / 2,
-			Y: (srch - u.wmPadding - u.wmImage.Bounds().Dy()) / 2,
+			X: -(srcw - u.wmPadding - u.wmImage.Bounds().Dx()) / 2,
+			Y: -(srch - u.wmPadding - u.wmImage.Bounds().Dy()) / 2,
 		}
 	}
 
