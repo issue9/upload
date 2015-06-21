@@ -116,7 +116,6 @@ func (w *Watermark) MarkImage(src io.ReadWriteSeeker, ext string) error {
 	var srcImg image.Image
 	var err error
 
-	var srccp io.Writer = src
 	switch ext {
 	case ".jpg", ".jpeg":
 		srcImg, err = jpeg.Decode(src)
@@ -169,9 +168,9 @@ func (w *Watermark) MarkImage(src io.ReadWriteSeeker, ext string) error {
 	}
 	switch ext {
 	case ".jpg", ".jpeg":
-		err = jpeg.Encode(srccp, dstImg, nil)
+		err = jpeg.Encode(src, dstImg, nil)
 	case ".png":
-		err = png.Encode(srccp, dstImg)
+		err = png.Encode(src, dstImg)
 	case ".gif":
 		err = gif.Encode(src, dstImg, nil)
 		// default: // 由前一个Switch确保此处没有default的出现。
