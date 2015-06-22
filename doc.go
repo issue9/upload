@@ -5,4 +5,4 @@
 // 实现了基本的上传功能。
 package upload
 
-const Version = "0.1.0.150620"
+const Version = "0.2.0.150622"

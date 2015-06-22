@@ -40,7 +40,7 @@ func output(a *assert.Assertion, pos Pos, bgExt, waterExt string) {
 	// 添加水印
 	w, err := NewWatermark(water, 10, pos)
 	a.NotError(err).NotNil(w)
-	a.NotError(w.Mark(dest))
+	a.NotError(w.MarkFile(dest))
 }
 
 func TestUploadWatermark(t *testing.T) {
@@ -66,7 +66,7 @@ func BenchmarkWater_MakeImage_500xJPEG(b *testing.B) {
 	defer file.Close()
 
 	for i := 0; i < b.N; i++ {
-		w.MarkImage(file, ".jpg")
+		w.Mark(file, ".jpg")
 	}
 }
 
@@ -84,6 +84,6 @@ func BenchmarkWater_MakeImage_500xPNG(b *testing.B) {
 	defer file.Close()
 
 	for i := 0; i < b.N; i++ {
-		w.MarkImage(file, ".png")
+		w.Mark(file, ".png")
 	}
 }

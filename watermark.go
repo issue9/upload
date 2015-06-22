@@ -28,7 +28,10 @@ const (
 	Center
 )
 
-var ErrUnsupportedWatermarkType = errors.New("不支持的水印类型")
+var (
+	ErrUnsupportedWatermarkType = errors.New("不支持的水印类型")
+	ErrInvalidPos               = errors.New("无效的pos值")
+)
 
 // 允许做水印的图片
 var watermarkExts = []string{
@@ -67,6 +70,10 @@ func NewWatermark(path string, padding int, pos Pos) (*Watermark, error) {
 		return nil, err
 	}
 
+	if pos < TopLeft || pos > Center {
+		return nil, ErrInvalidPos
+	}
+
 	return &Watermark{
 		image:   img,
 		padding: padding,
@@ -99,7 +106,7 @@ func (w *Watermark) isAllowExt(ext string) bool {
 }
 
 // 给指定的文件打上水印
-func (w *Watermark) Mark(path string) error {
+func (w *Watermark) MarkFile(path string) error {
 	// 此处不能使用os.O_APPEND 在osx下会造成seek失效。
 	// TODO:验证其它系统的正确性
 	file, err := os.OpenFile(path, os.O_RDWR, os.ModePerm)
@@ -108,11 +115,11 @@ func (w *Watermark) Mark(path string) error {
 	}
 	defer file.Close()
 
-	return w.MarkImage(file, strings.ToLower(filepath.Ext(path)))
+	return w.Mark(file, strings.ToLower(filepath.Ext(path)))
 }
 
 // 将水印写入src中，由ext确定当前图片的类型。
-func (w *Watermark) MarkImage(src io.ReadWriteSeeker, ext string) error {
+func (w *Watermark) Mark(src io.ReadWriteSeeker, ext string) error {
 	var srcImg image.Image
 	var err error
 

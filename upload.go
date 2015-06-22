@@ -157,7 +157,7 @@ func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 
 		// 水印
 		if u.watermark != nil && u.watermark.isAllowExt(ext) {
-			if err = u.watermark.MarkImage(f, ext); err != nil {
+			if err = u.watermark.Mark(f, ext); err != nil {
 				return nil, err
 			}
 		}
