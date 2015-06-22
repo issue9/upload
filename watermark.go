@@ -38,6 +38,9 @@ var watermarkExts = []string{
 	".gif", ".jpg", ".jpeg", ".png",
 }
 
+// Watermark用于给图片添加水印功能。
+// 目前支持gif,jpeg和png三种图片格式。
+// 若是gif图片，则只取图片的第一帧；png支持透明背景。
 type Watermark struct {
 	image   image.Image // 水印图片
 	padding int         // 水印留的边白

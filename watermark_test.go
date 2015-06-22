@@ -48,8 +48,15 @@ func TestUploadWatermark(t *testing.T) {
 
 	output(a, TopLeft, ".jpg", ".jpg")
 	output(a, TopRight, ".jpg", ".png")
+	output(a, Center, ".jpg", ".gif")
+
 	output(a, BottomLeft, ".png", ".jpg")
 	output(a, BottomRight, ".png", ".png")
+	output(a, Center, ".png", ".gif")
+
+	output(a, BottomLeft, ".gif", ".jpg")
+	output(a, BottomRight, ".gif", ".png")
+	output(a, Center, ".gif", ".gif")
 }
 
 // BenchmarkWater_MakeImage_500xJPEG	   50000	     30030 ns/op
