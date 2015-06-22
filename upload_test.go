@@ -5,6 +5,7 @@
 package upload
 
 import (
+	"os"
 	"testing"
 
 	"github.com/issue9/assert"
@@ -17,7 +18,7 @@ func TestNew(t *testing.T) {
 	a.NotError(err).NotNil(u)
 	// 自动转换成小写，且加上最前面的.符号
 	a.Equal(u.exts, []string{".gif", ".png", ".gif"})
-	a.Equal(u.dir, "./testdir/")
+	a.Equal(u.dir, "./testdir"+string(os.PathSeparator))
 
 	// dir为一个文件
 	u, err = New("./testdir/file", 10*1024, "gif", ".png", ".GIF")
