@@ -95,7 +95,7 @@ func BenchmarkWater_MakeImage_500xPNG(b *testing.B) {
 	}
 }
 
-// BenchmarkWater_MakeImage_500xGIF	  200000	      9389 ns/op
+// BenchmarkWater_MakeImage_500xGIF	  100000	     13633 ns/op
 func BenchmarkWater_MakeImage_500xGIF(b *testing.B) {
 	a := assert.New(b)
 
@@ -104,7 +104,7 @@ func BenchmarkWater_MakeImage_500xGIF(b *testing.B) {
 	w, err := NewWatermark("./testdata/watermark.gif", 10, TopLeft)
 	a.NotError(err).NotNil(w)
 
-	file, err := os.OpenFile("./testdata/output/gif.png", os.O_RDWR, os.ModePerm)
+	file, err := os.OpenFile("./testdata/output/bench.gif", os.O_RDWR, os.ModePerm)
 	a.NotError(err).NotNil(file)
 	defer file.Close()
 
