@@ -22,7 +22,7 @@ var (
 )
 
 // 创建文件的默认权限，比如Upload.dir若不存在，会使用此权限创建目录。
-const defaultMode os.FileMode = 0660
+const defaultMode os.FileMode = os.ModePerm
 
 // Upload用于处理文件上传
 type Upload struct {
@@ -60,7 +60,7 @@ func New(dir string, maxSize int64, exts ...string) (*Upload, error) {
 		}
 
 		// 尝试创建目录
-		if err = os.MkdirAll(dir, 0660); err != nil {
+		if err = os.MkdirAll(dir, defaultMode); err != nil {
 			return nil, err
 		}
 
