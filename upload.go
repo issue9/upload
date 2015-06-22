@@ -46,28 +46,21 @@ func New(dir string, maxSize int64, exts ...string) (*Upload, error) {
 		es = append(es, strings.ToLower(ext))
 	}
 
-	// 确保dir最后一个字符为目录分隔符。若传递的是一个文件，
-	// 在结尾加个/后，后面的os.Stat会返回错误信息！
+	// 确保dir最后一个字符为目录分隔符。
 	last := dir[len(dir)-1]
 	if last != '/' && last != filepath.Separator {
 		dir = dir + string(filepath.Separator)
 	}
 
-	// 确保dir目录存在，若不存在则会尝试创建。
-	if _, err := os.Stat(dir); err != nil && !os.IsExist(err) {
-		if !os.IsNotExist(err) {
-			return nil, err
-		}
+	// 若不存在目录，则尝试创建
+	if err := os.MkdirAll(dir, defaultMode); err != nil {
+		return nil, err
+	}
 
-		// 尝试创建目录
-		if err = os.MkdirAll(dir, defaultMode); err != nil {
-			return nil, err
-		}
-
-		// 创建目录成功，重新获取状态
-		if _, err = os.Stat(dir); err != nil {
-			return nil, err
-		}
+	// 确保dir目录存在。
+	// NOTE:此处的dir最后个字符为/，所以不用判断是否为目录。
+	if _, err := os.Stat(dir); err != nil {
+		return nil, err
 	}
 
 	return &Upload{
@@ -123,7 +116,7 @@ func (u *Upload) getDestPath(ext string) string {
 func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 	r.ParseMultipartForm(32 << 20)
 	heads := r.MultipartForm.File[field]
-	ret := make([]string, len(heads))
+	ret := make([]string, 0, len(heads))
 
 	for _, head := range heads {
 		file, err := head.Open()
@@ -145,8 +138,14 @@ func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 		}
 
 		path := u.getDestPath(ext)
-		ret = append(ret, path)
-		f, err := os.Create(u.dir + path)
+		ret = append(ret, path) // 记录相对于u.dir的文件名
+
+		path = u.dir + path
+		if err = os.MkdirAll(filepath.Dir(path), defaultMode); err != nil { // 若路径不存在，则创建
+			return nil, err
+		}
+
+		f, err := os.Create(path)
 		if err != nil {
 			return nil, err
 		}
