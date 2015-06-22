@@ -1,6 +1,19 @@
 upload [![Build Status](https://travis-ci.org/issue9/upload.svg?branch=master)](https://travis-ci.org/issue9/upload)
 ======
 
+处理上传文件，若是图片还可以设置水印。
+```go
+func(w http.ResponseWriter, r *http.Request){
+    u, err := upload.New("~/uploads/", 1024*1024*10, ".txt", ".jpg", ".png")
+    u.SetWatermark(...) // 设置水印图片
+
+    if r.Method="POST"{
+        u.Do("files", r) // 执行上传操作
+    }
+}
+
+```
+
 
 ### 安装
 
