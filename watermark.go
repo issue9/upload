@@ -5,7 +5,6 @@
 package upload
 
 import (
-	"errors"
 	"image"
 	"image/draw"
 	"image/gif"
@@ -26,11 +25,6 @@ const (
 	BottomLeft
 	BottomRight
 	Center
-)
-
-var (
-	ErrUnsupportedWatermarkType = errors.New("不支持的水印类型")
-	ErrInvalidPos               = errors.New("无效的pos值")
 )
 
 // 允许做水印的图片

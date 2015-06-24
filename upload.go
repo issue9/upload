@@ -5,7 +5,6 @@
 package upload
 
 import (
-	"errors"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -14,11 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-)
-
-var (
-	ErrNotAllowExt  = errors.New("不允许的文件上传类型")
-	ErrNotAllowSize = errors.New("文件上传大小超过最大设定值或是文件大小为0")
 )
 
 // 创建文件的默认权限，比如Upload.dir若不存在，会使用此权限创建目录。
@@ -100,7 +94,7 @@ func (u *Upload) isAllowSize(file multipart.File) (bool, error) {
 	case sizer:
 		size = f.Size()
 	default:
-		return false, errors.New("上传文件时发生未知的错误")
+		return false, ErrUnknownFileSize
 	}
 
 	return size > 0 && size <= u.maxSize, nil
