@@ -21,6 +21,7 @@ const defaultMode os.FileMode = os.ModePerm
 // Upload用于处理文件上传
 type Upload struct {
 	dir       string     // 上传文件保存的路径根目录
+	format    string     // 目录格式
 	maxSize   int64      // 允许的最大文件大小，以byte为单位
 	exts      []string   // 允许的扩展名
 	watermark *Watermark // 水印
@@ -28,9 +29,10 @@ type Upload struct {
 
 // 声明一个Upload对象。
 // dir 上传文件的保存目录，若目录不存在，则会尝试创建;
+// format 路径的格式，只能是时间格式
 // maxSize 允许上传文件的最大尺寸，单位为byte；
 // exts 允许的扩展名，若为空，将不允许任何文件上传。
-func New(dir string, maxSize int64, exts ...string) (*Upload, error) {
+func New(dir, format string, maxSize int64, exts ...string) (*Upload, error) {
 	// 确保所有的后缀名都是以.作为开始符号的。
 	es := make([]string, 0, len(exts))
 	for _, ext := range exts {
@@ -59,6 +61,7 @@ func New(dir string, maxSize int64, exts ...string) (*Upload, error) {
 
 	return &Upload{
 		dir:     dir,
+		format:  format,
 		maxSize: maxSize,
 		exts:    es,
 	}, nil
@@ -102,10 +105,10 @@ func (u *Upload) isAllowSize(file multipart.File) (bool, error) {
 
 func (u *Upload) getDestPath(ext string) string {
 	n := time.Now()
-	return n.Format("2006/01/02/") + strconv.Itoa(n.Nanosecond()) + ext
+	return n.Format(u.format) + strconv.Itoa(n.Nanosecond()) + ext
 }
 
-// 招行上传的操作。会检测上传文件是否符合要求，只要有一个文件不符合，就会中断上传。
+// 执行上传的操作。会检测上传文件是否符合要求，只要有一个文件不符合，就会中断上传。
 // 返回的是相对于u.dir目录的文件名列表。
 func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 	r.ParseMultipartForm(32 << 20)
