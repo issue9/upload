@@ -12,5 +12,3 @@
 //     }
 //  }
 package upload
-
-const Version = "0.2.1.150624"
