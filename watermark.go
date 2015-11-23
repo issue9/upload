@@ -5,6 +5,7 @@
 package upload
 
 import (
+	"errors"
 	"image"
 	"image/draw"
 	"image/gif"
@@ -160,6 +161,14 @@ func (w *Watermark) Mark(src io.ReadWriteSeeker, ext string) error {
 			X: -(srcw - w.padding - w.image.Bounds().Dx()) / 2,
 			Y: -(srch - w.padding - w.image.Bounds().Dy()) / 2,
 		}
+	}
+
+	if point.X > 0 {
+		return errors.New("水印宽度大于图片宽度")
+	}
+
+	if point.Y > 0 {
+		return errors.New("水印高度大于图片高度")
 	}
 
 	dstImg := image.NewNRGBA64(srcImg.Bounds())
