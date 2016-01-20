@@ -5,6 +5,7 @@
 package upload
 
 import (
+	"errors"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -112,6 +113,10 @@ func (u *Upload) getDestPath(ext string) string {
 // 返回的是相对于u.dir目录的文件名列表。
 func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 	r.ParseMultipartForm(32 << 20)
+	if r.MultipartForm.File == nil {
+		return nil, errors.New("未指定任何上传文件")
+	}
+
 	heads := r.MultipartForm.File[field]
 	ret := make([]string, 0, len(heads))
 
