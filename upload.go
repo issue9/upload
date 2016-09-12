@@ -16,22 +16,22 @@ import (
 	"time"
 )
 
-// 创建文件的默认权限，比如Upload.dir若不存在，会使用此权限创建目录。
+// 创建文件的默认权限，比如 Upload.dir 若不存在，会使用此权限创建目录。
 const defaultMode os.FileMode = os.ModePerm
 
-// Upload用于处理文件上传
+// Upload 用于处理文件上传
 type Upload struct {
 	dir       string     // 上传文件保存的路径根目录
 	format    string     // 目录格式
-	maxSize   int64      // 允许的最大文件大小，以byte为单位
+	maxSize   int64      // 允许的最大文件大小，以 byte 为单位
 	exts      []string   // 允许的扩展名
 	watermark *Watermark // 水印
 }
 
-// 声明一个Upload对象。
+// New 声明一个Upload对象。
 // dir 上传文件的保存目录，若目录不存在，则会尝试创建;
 // format 路径的格式，只能是时间格式
-// maxSize 允许上传文件的最大尺寸，单位为byte；
+// maxSize 允许上传文件的最大尺寸，单位为 byte；
 // exts 允许的扩展名，若为空，将不允许任何文件上传。
 func New(dir, format string, maxSize int64, exts ...string) (*Upload, error) {
 	// 确保所有的后缀名都是以.作为开始符号的。
@@ -54,8 +54,8 @@ func New(dir, format string, maxSize int64, exts ...string) (*Upload, error) {
 		return nil, err
 	}
 
-	// 确保dir目录存在。
-	// NOTE:此处的dir最后个字符为/，所以不用判断是否为目录。
+	// 确保 dir 目录存在。
+	// NOTE:此处的 dir 最后个字符为/，所以不用判断是否为目录。
 	if _, err := os.Stat(dir); err != nil {
 		return nil, err
 	}
@@ -109,8 +109,8 @@ func (u *Upload) getDestPath(ext string) string {
 	return n.Format(u.format) + strconv.Itoa(n.Nanosecond()) + ext
 }
 
-// 执行上传的操作。会检测上传文件是否符合要求，只要有一个文件不符合，就会中断上传。
-// 返回的是相对于u.dir目录的文件名列表。
+// Do 执行上传的操作。会检测上传文件是否符合要求，只要有一个文件不符合，就会中断上传。
+// 返回的是相对于 Upload.dir 目录的文件名列表。
 func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 	r.ParseMultipartForm(32 << 20)
 	if r.MultipartForm.File == nil {
