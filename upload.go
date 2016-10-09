@@ -109,6 +109,11 @@ func (u *Upload) getDestPath(ext string) string {
 	return n.Format(u.format) + strconv.Itoa(n.Nanosecond()) + ext
 }
 
+// Dir 获取上传文件的保存目录
+func (u *Upload) Dir() string {
+	return u.dir
+}
+
 // Do 执行上传的操作。会检测上传文件是否符合要求，只要有一个文件不符合，就会中断上传。
 // 返回的是相对于 Upload.dir 目录的文件名列表。
 func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
