@@ -17,8 +17,6 @@ import (
 	"strings"
 )
 
-type Pos int
-
 // 水印的位置
 const (
 	TopLeft Pos = iota
@@ -28,24 +26,27 @@ const (
 	Center
 )
 
+// Pos 表示水印的位置
+type Pos int
+
 // 允许做水印的图片
 var watermarkExts = []string{
 	".gif", ".jpg", ".jpeg", ".png",
 }
 
-// Watermark用于给图片添加水印功能。
-// 目前支持gif,jpeg和png三种图片格式。
-// 若是gif图片，则只取图片的第一帧；png支持透明背景。
+// Watermark 用于给图片添加水印功能。
+// 目前支持 gif、jpeg 和 png 三种图片格式。
+// 若是 gif 图片，则只取图片的第一帧；png 支持透明背景。
 type Watermark struct {
 	image   image.Image // 水印图片
 	padding int         // 水印留的边白
 	pos     Pos         // 水印的位置
 }
 
-// 设置水印的相关参数。
-// path为水印文件的路径；
-// padding为水印在目标不图像上的留白大小；
-// pos水印的位置。
+// NewWatermark 设置水印的相关参数。
+// path 为水印文件的路径；
+// padding 为水印在目标不图像上的留白大小；
+// pos 水印的位置。
 func NewWatermark(path string, padding int, pos Pos) (*Watermark, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -79,10 +80,10 @@ func NewWatermark(path string, padding int, pos Pos) (*Watermark, error) {
 	}, nil
 }
 
-// 设置水印的相关参数。
-// path为水印文件的路径；
-// padding为水印在目标不图像上的留白大小；
-// pos水印的位置。
+// SetWatermark 设置水印的相关参数。
+// path 为水印文件的路径；
+// padding 为水印在目标不图像上的留白大小；
+// pos 水印的位置。
 func (u *Upload) SetWatermark(path string, padding int, pos Pos) error {
 	img, err := NewWatermark(path, padding, pos)
 	if err != nil {
@@ -103,9 +104,9 @@ func (w *Watermark) isAllowExt(ext string) bool {
 	return false
 }
 
-// 给指定的文件打上水印
+// MarkFile 给指定的文件打上水印
 func (w *Watermark) MarkFile(path string) error {
-	// 此处不能使用os.O_APPEND 在osx下会造成seek失效。
+	// 此处不能使用 os.O_APPEND 在 osx 下会造成 seek 失效。
 	// TODO:验证其它系统的正确性
 	file, err := os.OpenFile(path, os.O_RDWR, os.ModePerm)
 	if err != nil {
@@ -116,7 +117,7 @@ func (w *Watermark) MarkFile(path string) error {
 	return w.Mark(file, strings.ToLower(filepath.Ext(path)))
 }
 
-// 将水印写入src中，由ext确定当前图片的类型。
+// Mark 将水印写入 src 中，由 ext 确定当前图片的类型。
 func (w *Watermark) Mark(src io.ReadWriteSeeker, ext string) error {
 	var srcImg image.Image
 	var err error

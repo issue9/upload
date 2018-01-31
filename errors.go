@@ -4,10 +4,9 @@
 
 package upload
 
-import (
-	"errors"
-)
+import "errors"
 
+// 常用错误类型
 var (
 	ErrNotAllowExt              = errors.New("不允许的文件上传类型")
 	ErrNotAllowSize             = errors.New("文件上传大小超过最大设定值或是文件大小为0")

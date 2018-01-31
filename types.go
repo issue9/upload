@@ -13,7 +13,7 @@ type sizer interface {
 	Size() int64
 }
 
-// os.File.Stat()(os.FileInof,error)
+// os.File.Stat()(os.FileInfo,error)
 type stater interface {
 	Stat() (os.FileInfo, error)
 }

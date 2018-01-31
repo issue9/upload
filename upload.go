@@ -117,8 +117,11 @@ func (u *Upload) Dir() string {
 // Do 执行上传的操作。会检测上传文件是否符合要求，只要有一个文件不符合，就会中断上传。
 // 返回的是相对于 Upload.dir 目录的文件名列表。
 func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
-	r.ParseMultipartForm(32 << 20)
-	if r.MultipartForm.File == nil {
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		return nil, err
+	}
+
+	if r.MultipartForm == nil || r.MultipartForm.File == nil {
 		return nil, errors.New("未指定任何上传文件")
 	}
 
