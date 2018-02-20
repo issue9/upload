@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
-// 简单的upload包的示例程序，可以一次上传一个或是多个功能！
+// 简单的 upload 包的示例程序，可以一次上传一个或是多个功能！
 package main
 
 import (

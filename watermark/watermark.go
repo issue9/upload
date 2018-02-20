@@ -2,7 +2,8 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
-package upload
+// Package watermark 提供一个简单的水印功能。
+package watermark
 
 import (
 	"errors"
@@ -26,10 +27,16 @@ const (
 	Center
 )
 
+// 错误类型
+var (
+	ErrUnsupportedWatermarkType = errors.New("不支持的水印类型")
+	ErrInvalidPos               = errors.New("无效的pos值")
+)
+
 // Pos 表示水印的位置
 type Pos int
 
-// 允许做水印的图片
+// 允许做水印的图片类型
 var watermarkExts = []string{
 	".gif", ".jpg", ".jpeg", ".png",
 }
@@ -43,11 +50,12 @@ type Watermark struct {
 	pos     Pos         // 水印的位置
 }
 
-// NewWatermark 设置水印的相关参数。
+// New 声明一个 Watermark 对象。
+//
 // path 为水印文件的路径；
 // padding 为水印在目标不图像上的留白大小；
 // pos 水印的位置。
-func NewWatermark(path string, padding int, pos Pos) (*Watermark, error) {
+func New(path string, padding int, pos Pos) (*Watermark, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -80,22 +88,8 @@ func NewWatermark(path string, padding int, pos Pos) (*Watermark, error) {
 	}, nil
 }
 
-// SetWatermark 设置水印的相关参数。
-// path 为水印文件的路径；
-// padding 为水印在目标不图像上的留白大小；
-// pos 水印的位置。
-func (u *Upload) SetWatermark(path string, padding int, pos Pos) error {
-	img, err := NewWatermark(path, padding, pos)
-	if err != nil {
-		return err
-	}
-
-	u.watermark = img
-	return nil
-}
-
-// 该扩展名的图片是否允许使用水印
-func (w *Watermark) isAllowExt(ext string) bool {
+// IsAllowExt 该扩展名的图片是否允许使用水印
+func IsAllowExt(ext string) bool {
 	for _, e := range watermarkExts {
 		if e == ext {
 			return true
@@ -106,8 +100,6 @@ func (w *Watermark) isAllowExt(ext string) bool {
 
 // MarkFile 给指定的文件打上水印
 func (w *Watermark) MarkFile(path string) error {
-	// 此处不能使用 os.O_APPEND 在 osx 下会造成 seek 失效。
-	// TODO:验证其它系统的正确性
 	file, err := os.OpenFile(path, os.O_RDWR, os.ModePerm)
 	if err != nil {
 		return err

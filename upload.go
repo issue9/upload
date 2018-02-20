@@ -14,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/issue9/upload/watermark"
 )
 
 // 创建文件的默认权限，比如 Upload.dir 若不存在，会使用此权限创建目录。
@@ -21,11 +23,11 @@ const defaultMode os.FileMode = os.ModePerm
 
 // Upload 用于处理文件上传
 type Upload struct {
-	dir       string     // 上传文件保存的路径根目录
-	format    string     // 目录格式
-	maxSize   int64      // 允许的最大文件大小，以 byte 为单位
-	exts      []string   // 允许的扩展名
-	watermark *Watermark // 水印
+	dir       string               // 上传文件保存的路径根目录
+	format    string               // 目录格式
+	maxSize   int64                // 允许的最大文件大小，以 byte 为单位
+	exts      []string             // 允许的扩展名
+	watermark *watermark.Watermark // 水印
 }
 
 // New 声明一个Upload对象。
@@ -165,7 +167,7 @@ func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 		}
 
 		// 水印
-		if u.watermark != nil && u.watermark.isAllowExt(ext) {
+		if u.watermark != nil && watermark.IsAllowExt(ext) {
 			if err = u.watermark.Mark(f, ext); err != nil {
 				return nil, err
 			}
@@ -177,4 +179,18 @@ func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 	}
 
 	return ret, nil
+}
+
+// SetWatermark 设置水印的相关参数。
+// path 为水印文件的路径；
+// padding 为水印在目标不图像上的留白大小；
+// pos 水印的位置。
+func (u *Upload) SetWatermark(path string, padding int, pos watermark.Pos) error {
+	img, err := watermark.New(path, padding, pos)
+	if err != nil {
+		return err
+	}
+
+	u.watermark = img
+	return nil
 }

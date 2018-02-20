@@ -8,9 +8,7 @@ import "errors"
 
 // 常用错误类型
 var (
-	ErrNotAllowExt              = errors.New("不允许的文件上传类型")
-	ErrNotAllowSize             = errors.New("文件上传大小超过最大设定值或是文件大小为0")
-	ErrUnsupportedWatermarkType = errors.New("不支持的水印类型")
-	ErrUnknownFileSize          = errors.New("未知的文件大小")
-	ErrInvalidPos               = errors.New("无效的pos值")
+	ErrNotAllowExt     = errors.New("不允许的文件上传类型")
+	ErrNotAllowSize    = errors.New("文件上传大小超过最大设定值或是文件大小为0")
+	ErrUnknownFileSize = errors.New("未知的文件大小")
 )

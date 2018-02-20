@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
-package upload
+package watermark
 
 import (
 	"io"
@@ -12,7 +12,7 @@ import (
 	"github.com/issue9/assert"
 )
 
-// 复制文件到output目录下，并重命名。
+// 复制文件到 output 目录下，并重命名。
 func copyBackgroundFile(a *assert.Assertion, dest, src string) {
 	destFile, err := os.Create(dest)
 	a.NotError(err).NotNil(destFile)
@@ -38,7 +38,7 @@ func output(a *assert.Assertion, pos Pos, bgExt, waterExt string) {
 	copyBackgroundFile(a, dest, src)
 
 	// 添加水印
-	w, err := NewWatermark(water, 10, pos)
+	w, err := New(water, 10, pos)
 	a.NotError(err).NotNil(w)
 	a.NotError(w.MarkFile(dest))
 }
@@ -65,7 +65,7 @@ func BenchmarkWater_MakeImage_500xJPEG(b *testing.B) {
 
 	copyBackgroundFile(a, "./testdata/output/bench.jpg", "./testdata/background.jpg")
 
-	w, err := NewWatermark("./testdata/watermark.jpg", 10, TopLeft)
+	w, err := New("./testdata/watermark.jpg", 10, TopLeft)
 	a.NotError(err).NotNil(w)
 
 	file, err := os.OpenFile("./testdata/output/bench.jpg", os.O_RDWR, os.ModePerm)
@@ -83,7 +83,7 @@ func BenchmarkWater_MakeImage_500xPNG(b *testing.B) {
 
 	copyBackgroundFile(a, "./testdata/output/bench.png", "./testdata/background.png")
 
-	w, err := NewWatermark("./testdata/watermark.png", 10, TopLeft)
+	w, err := New("./testdata/watermark.png", 10, TopLeft)
 	a.NotError(err).NotNil(w)
 
 	file, err := os.OpenFile("./testdata/output/bench.png", os.O_RDWR, os.ModePerm)
@@ -101,7 +101,7 @@ func BenchmarkWater_MakeImage_500xGIF(b *testing.B) {
 
 	copyBackgroundFile(a, "./testdata/output/bench.gif", "./testdata/background.gif")
 
-	w, err := NewWatermark("./testdata/watermark.gif", 10, TopLeft)
+	w, err := New("./testdata/watermark.gif", 10, TopLeft)
 	a.NotError(err).NotNil(w)
 
 	file, err := os.OpenFile("./testdata/output/bench.gif", os.O_RDWR, os.ModePerm)
