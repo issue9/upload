@@ -30,7 +30,7 @@ const (
 // 错误类型
 var (
 	ErrUnsupportedWatermarkType = errors.New("不支持的水印类型")
-	ErrInvalidPos               = errors.New("无效的pos值")
+	ErrInvalidPos               = errors.New("无效的 pos 值")
 )
 
 // Pos 表示水印的位置
@@ -53,7 +53,7 @@ type Watermark struct {
 // New 声明一个 Watermark 对象。
 //
 // path 为水印文件的路径；
-// padding 为水印在目标不图像上的留白大小；
+// padding 为水印在目标图像上的留白大小；
 // pos 水印的位置。
 func New(path string, padding int, pos Pos) (*Watermark, error) {
 	f, err := os.Open(path)
@@ -89,7 +89,11 @@ func New(path string, padding int, pos Pos) (*Watermark, error) {
 }
 
 // IsAllowExt 该扩展名的图片是否允许使用水印
+//
+// ext 必须带上 . 符号
 func IsAllowExt(ext string) bool {
+	ext = strings.ToLower(ext)
+
 	for _, e := range watermarkExts {
 		if e == ext {
 			return true
@@ -128,41 +132,7 @@ func (w *Watermark) Mark(src io.ReadWriteSeeker, ext string) error {
 		return err
 	}
 
-	var point image.Point
-	srcw := srcImg.Bounds().Dx()
-	srch := srcImg.Bounds().Dy()
-	switch w.pos {
-	case TopLeft:
-		point = image.Point{X: -w.padding, Y: -w.padding}
-	case TopRight:
-		point = image.Point{
-			X: -(srcw - w.padding - w.image.Bounds().Dx()),
-			Y: -w.padding,
-		}
-	case BottomLeft:
-		point = image.Point{
-			X: -w.padding,
-			Y: -(srch - w.padding - w.image.Bounds().Dy()),
-		}
-	case BottomRight:
-		point = image.Point{
-			X: -(srcw - w.padding - w.image.Bounds().Dx()),
-			Y: -(srch - w.padding - w.image.Bounds().Dy()),
-		}
-	case Center:
-		point = image.Point{
-			X: -(srcw - w.padding - w.image.Bounds().Dx()) / 2,
-			Y: -(srch - w.padding - w.image.Bounds().Dy()) / 2,
-		}
-	}
-
-	if point.X > 0 {
-		return errors.New("水印宽度大于图片宽度")
-	}
-
-	if point.Y > 0 {
-		return errors.New("水印高度大于图片高度")
-	}
+	point := w.getPoing(srcImg.Bounds().Dx(), srcImg.Bounds().Dy())
 
 	dstImg := image.NewNRGBA64(srcImg.Bounds())
 	draw.Draw(dstImg, dstImg.Bounds(), srcImg, image.ZP, draw.Src)
@@ -182,4 +152,37 @@ func (w *Watermark) Mark(src io.ReadWriteSeeker, ext string) error {
 		// default: // 由前一个Switch确保此处没有default的出现。
 	}
 	return err
+}
+
+func (w *Watermark) getPoing(width, height int) image.Point {
+	var point image.Point
+
+	switch w.pos {
+	case TopLeft:
+		point = image.Point{X: -w.padding, Y: -w.padding}
+	case TopRight:
+		point = image.Point{
+			X: -(width - w.padding - w.image.Bounds().Dx()),
+			Y: -w.padding,
+		}
+	case BottomLeft:
+		point = image.Point{
+			X: -w.padding,
+			Y: -(height - w.padding - w.image.Bounds().Dy()),
+		}
+	case BottomRight:
+		point = image.Point{
+			X: -(width - w.padding - w.image.Bounds().Dx()),
+			Y: -(height - w.padding - w.image.Bounds().Dy()),
+		}
+	case Center:
+		point = image.Point{
+			X: -(width - w.padding - w.image.Bounds().Dx()) / 2,
+			Y: -(height - w.padding - w.image.Bounds().Dy()) / 2,
+		}
+	default:
+		panic(ErrInvalidPos)
+	}
+
+	return point
 }
