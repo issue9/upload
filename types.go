@@ -4,9 +4,7 @@
 
 package upload
 
-import (
-	"os"
-)
+import "os"
 
 // io.SectionReader.Size() int64
 type sizer interface {
