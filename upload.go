@@ -38,7 +38,8 @@ type Upload struct {
 	watermark *watermark.Watermark // 水印
 }
 
-// New 声明一个Upload对象。
+// New 声明一个 Upload 对象。
+//
 // dir 上传文件的保存目录，若目录不存在，则会尝试创建;
 // format 路径的格式，只能是时间格式
 // maxSize 允许上传文件的最大尺寸，单位为 byte；
@@ -79,13 +80,12 @@ func New(dir, format string, maxSize int64, exts ...string) (*Upload, error) {
 }
 
 // 判断扩展名是否符合要求。
-// 由调用者保证 ext 参数为小写。
 func (u *Upload) isAllowExt(ext string) bool {
 	if len(ext) == 0 { // 没有扩展名，一律过滤
 		return false
 	}
 
-	// 是否为允许的扩展名
+	ext = strings.ToLower(ext)
 	for _, e := range u.exts {
 		if e == ext {
 			return true
@@ -134,6 +134,8 @@ func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 	return ret, nil
 }
 
+// 将上传的文件移到 u.Dir 目录下。
+//
 // 返回相对于 u.Dir 的地址
 func (u *Upload) moveFile(head *multipart.FileHeader) (string, error) {
 	file, err := head.Open()
@@ -182,16 +184,21 @@ func (u *Upload) moveFile(head *multipart.FileHeader) (string, error) {
 	return ret, nil
 }
 
-// SetWatermark 设置水印的相关参数。
+// SetWatermarkFile 设置水印的相关参数。
 // path 为水印文件的路径；
 // padding 为水印在目标不图像上的留白大小；
 // pos 水印的位置。
-func (u *Upload) SetWatermark(path string, padding int, pos watermark.Pos) error {
-	img, err := watermark.New(path, padding, pos)
+func (u *Upload) SetWatermarkFile(path string, padding int, pos watermark.Pos) error {
+	w, err := watermark.New(path, padding, pos)
 	if err != nil {
 		return err
 	}
 
-	u.watermark = img
+	u.SetWatermark(w)
 	return nil
+}
+
+// SetWatermark 设置水印的相关参数。
+func (u *Upload) SetWatermark(w *watermark.Watermark) {
+	u.watermark = w
 }
