@@ -21,6 +21,14 @@ import (
 // 创建文件的默认权限，比如 Upload.dir 若不存在，会使用此权限创建目录。
 const defaultMode os.FileMode = os.ModePerm
 
+// 常用错误类型
+var (
+	ErrNotAllowExt     = errors.New("不允许的文件上传类型")
+	ErrNotAllowSize    = errors.New("文件上传大小超过最大设定值或是文件大小为0")
+	ErrUnknownFileSize = errors.New("未知的文件大小")
+	ErrNoUploadFile    = errors.New("客户端没有上传文件")
+)
+
 // Upload 用于处理文件上传
 type Upload struct {
 	dir       string               // 上传文件保存的路径根目录
@@ -45,7 +53,7 @@ func New(dir, format string, maxSize int64, exts ...string) (*Upload, error) {
 		es = append(es, strings.ToLower(ext))
 	}
 
-	// 确保dir最后一个字符为目录分隔符。
+	// 确保 dir 最后一个字符为目录分隔符。
 	last := dir[len(dir)-1]
 	if last != '/' && last != filepath.Separator {
 		dir = dir + string(filepath.Separator)
@@ -71,7 +79,7 @@ func New(dir, format string, maxSize int64, exts ...string) (*Upload, error) {
 }
 
 // 判断扩展名是否符合要求。
-// 由调用者保证ext参数为小写。
+// 由调用者保证 ext 参数为小写。
 func (u *Upload) isAllowExt(ext string) bool {
 	if len(ext) == 0 { // 没有扩展名，一律过滤
 		return false
@@ -84,26 +92,6 @@ func (u *Upload) isAllowExt(ext string) bool {
 		}
 	}
 	return false
-}
-
-// 检测文件大小是否符合要求。
-func (u *Upload) isAllowSize(file multipart.File) (bool, error) {
-	var size int64
-
-	switch f := file.(type) {
-	case stater:
-		stat, err := f.Stat()
-		if err != nil {
-			return false, err
-		}
-		size = stat.Size()
-	case sizer:
-		size = f.Size()
-	default:
-		return false, ErrUnknownFileSize
-	}
-
-	return size > 0 && size <= u.maxSize, nil
 }
 
 func (u *Upload) getDestPath(ext string) string {
@@ -124,58 +112,71 @@ func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 	}
 
 	if r.MultipartForm == nil || r.MultipartForm.File == nil {
-		return nil, errors.New("未指定任何上传文件")
+		return nil, ErrNoUploadFile
 	}
 
 	heads := r.MultipartForm.File[field]
+	if len(heads) == 0 {
+		return nil, ErrNoUploadFile
+	}
+
 	ret := make([]string, 0, len(heads))
 
 	for _, head := range heads {
-		file, err := head.Open()
+		path, err := u.moveFile(head)
 		if err != nil {
 			return nil, err
 		}
 
-		ext := strings.ToLower(filepath.Ext(head.Filename))
-		if !u.isAllowExt(ext) {
-			return nil, ErrNotAllowExt
-		}
+		ret = append(ret, path)
+	}
 
-		ok, err := u.isAllowSize(file)
-		if err != nil {
-			return nil, err
-		}
-		if !ok {
-			return nil, ErrNotAllowSize
-		}
+	return ret, nil
+}
 
-		path := u.getDestPath(ext)
-		ret = append(ret, path) // 记录相对于u.dir的文件名
+// 返回相对于 u.Dir 的地址
+func (u *Upload) moveFile(head *multipart.FileHeader) (string, error) {
+	file, err := head.Open()
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
 
-		path = u.dir + path
-		if err = os.MkdirAll(filepath.Dir(path), defaultMode); err != nil { // 若路径不存在，则创建
-			return nil, err
+	ext := strings.ToLower(filepath.Ext(head.Filename))
+	if !u.isAllowExt(ext) {
+		return "", ErrNotAllowExt
+	}
+
+	ok, err := u.isAllowSize(file)
+	if err != nil {
+		return "", err
+	}
+	if !ok {
+		return "", ErrNotAllowSize
+	}
+
+	path := u.getDestPath(ext)
+	ret := path
+
+	path = u.dir + path
+	if err = os.MkdirAll(filepath.Dir(path), defaultMode); err != nil { // 若路径不存在，则创建
+		return "", err
+	}
+
+	f, err := os.Create(path)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	if _, err = io.Copy(f, file); err != nil {
+		return "", err
+	}
+
+	if u.watermark != nil && watermark.IsAllowExt(ext) {
+		if err = u.watermark.Mark(f, ext); err != nil {
+			return "", err
 		}
-
-		f, err := os.Create(path)
-		if err != nil {
-			return nil, err
-		}
-
-		if _, err = io.Copy(f, file); err != nil {
-			return nil, err
-		}
-
-		// 水印
-		if u.watermark != nil && watermark.IsAllowExt(ext) {
-			if err = u.watermark.Mark(f, ext); err != nil {
-				return nil, err
-			}
-		}
-
-		// 循环最后关闭所有打开的文件
-		f.Close()
-		file.Close()
 	}
 
 	return ret, nil
