@@ -29,5 +29,4 @@ _testmain.go
 # osx
 .DS_Store
 
-output/
 example/upload/

@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/issue9/upload/watermark"
+	"github.com/issue9/watermark"
 )
 
 // 创建文件的默认权限，比如 Upload.dir 若不存在，会使用此权限创建目录。

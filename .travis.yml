@@ -13,3 +13,4 @@ go:
 install:
   - mkdir ./watermark/testdata/output
   - go get github.com/issue9/assert
+  - go get github.com/issue9/watermark
