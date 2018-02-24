@@ -114,17 +114,18 @@ func (w *Watermark) MarkFile(path string) error {
 }
 
 // Mark 将水印写入 src 中，由 ext 确定当前图片的类型。
-func (w *Watermark) Mark(src io.ReadWriteSeeker, ext string) error {
+func (w *Watermark) Mark(src io.ReadWriteSeeker, ext string) (err error) {
+	if ext == ".gif" {
+		return w.markGIF(src)
+	}
+
 	var srcImg image.Image
-	var err error
 
 	switch ext {
 	case ".jpg", ".jpeg":
 		srcImg, err = jpeg.Decode(src)
 	case ".png":
 		srcImg, err = png.Decode(src)
-	case ".gif":
-		srcImg, err = gif.Decode(src)
 	default:
 		return ErrUnsupportedWatermarkType
 	}
@@ -133,25 +134,44 @@ func (w *Watermark) Mark(src io.ReadWriteSeeker, ext string) error {
 	}
 
 	point := w.getPoing(srcImg.Bounds().Dx(), srcImg.Bounds().Dy())
-
 	dstImg := image.NewNRGBA64(srcImg.Bounds())
 	draw.Draw(dstImg, dstImg.Bounds(), srcImg, image.ZP, draw.Src)
 	draw.Draw(dstImg, dstImg.Bounds(), w.image, point, draw.Over)
+
+	if _, err = src.Seek(0, 0); err != nil {
+		return err
+	}
+
+	switch ext {
+	case ".jpg", ".jpeg":
+		return jpeg.Encode(src, dstImg, nil)
+	case ".png":
+		return png.Encode(src, dstImg)
+	default:
+		return nil
+	}
+}
+
+func (w *Watermark) markGIF(src io.ReadWriteSeeker) error {
+	srcGIF, err := gif.DecodeAll(src)
+	if err != nil {
+		return err
+	}
+	bound := srcGIF.Image[0].Bounds()
+	point := w.getPoing(bound.Dx(), bound.Dy())
+
+	for index, img := range srcGIF.Image {
+		dstImg := image.NewPaletted(img.Bounds(), img.Palette)
+		draw.Draw(dstImg, dstImg.Bounds(), img, image.ZP, draw.Src)
+		draw.Draw(dstImg, dstImg.Bounds(), w.image, point, draw.Over)
+		srcGIF.Image[index] = dstImg
+	}
 
 	_, err = src.Seek(0, 0)
 	if err != nil {
 		return err
 	}
-	switch ext {
-	case ".jpg", ".jpeg":
-		err = jpeg.Encode(src, dstImg, nil)
-	case ".png":
-		err = png.Encode(src, dstImg)
-	case ".gif":
-		err = gif.Encode(src, dstImg, nil)
-		// default: // 由前一个Switch确保此处没有default的出现。
-	}
-	return err
+	return gif.EncodeAll(src, srcGIF)
 }
 
 func (w *Watermark) getPoing(width, height int) image.Point {
