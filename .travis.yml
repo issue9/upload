@@ -11,5 +11,5 @@ go:
   - 1.8
 
 install:
-  - mkdir ./testdata/watermark/output
+  - mkdir ./watermark/testdata/output
   - go get github.com/issue9/assert
