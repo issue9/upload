@@ -185,6 +185,7 @@ func (u *Upload) moveFile(head *multipart.FileHeader) (string, error) {
 }
 
 // SetWatermarkFile 设置水印的相关参数。
+//
 // path 为水印文件的路径；
 // padding 为水印在目标不图像上的留白大小；
 // pos 水印的位置。
