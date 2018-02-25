@@ -3,7 +3,7 @@ upload [![Build Status](https://travis-ci.org/issue9/upload.svg?branch=master)](
 
 处理上传文件，若是图片还可以设置水印。
 ```go
-func(w http.ResponseWriter, r *http.Request){
+func(w http.ResponseWriter, r *http.Request) {
     u, err := upload.New("~/uploads/", "2006/01/02/", 1024*1024*10, ".txt", ".jpg", ".png")
     u.SetWatermark(...) // 设置水印图片
 

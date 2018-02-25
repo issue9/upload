@@ -11,10 +11,10 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
+	"github.com/issue9/unique"
 	"github.com/issue9/watermark"
 )
 
@@ -31,11 +31,12 @@ var (
 
 // Upload 用于处理文件上传
 type Upload struct {
-	dir       string               // 上传文件保存的路径根目录
-	format    string               // 目录格式
-	maxSize   int64                // 允许的最大文件大小，以 byte 为单位
-	exts      []string             // 允许的扩展名
-	watermark *watermark.Watermark // 水印
+	dir       string
+	format    string
+	maxSize   int64
+	exts      []string
+	watermark *watermark.Watermark
+	filenames *unique.Unique
 }
 
 // New 声明一个 Upload 对象。
@@ -72,10 +73,11 @@ func New(dir, format string, maxSize int64, exts ...string) (*Upload, error) {
 	}
 
 	return &Upload{
-		dir:     dir,
-		format:  format,
-		maxSize: maxSize,
-		exts:    es,
+		dir:       dir,
+		format:    format,
+		maxSize:   maxSize,
+		exts:      es,
+		filenames: unique.New(time.Now().Unix(), 1, 30, "", 36),
 	}, nil
 }
 
@@ -96,7 +98,7 @@ func (u *Upload) isAllowExt(ext string) bool {
 
 func (u *Upload) getDestPath(ext string) string {
 	n := time.Now()
-	return n.Format(u.format) + strconv.Itoa(n.Nanosecond()) + ext
+	return n.Format(u.format) + u.filenames.String() + ext
 }
 
 // Dir 获取上传文件的保存目录
