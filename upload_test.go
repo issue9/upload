@@ -34,6 +34,8 @@ func TestUpload_isAllowExt(t *testing.T) {
 	a.True(u.isAllowExt(".png"))
 
 	a.False(u.isAllowExt(".TXT"))
+	a.False(u.isAllowExt(""))
+	a.False(u.isAllowExt(".png"))
 	a.False(u.isAllowExt(".exe"))
 }
 

@@ -86,7 +86,6 @@ func (u *Upload) isAllowExt(ext string) bool {
 		return false
 	}
 
-	ext = strings.ToLower(ext)
 	for _, e := range u.exts {
 		if e == ext {
 			return true
