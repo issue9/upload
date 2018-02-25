@@ -13,3 +13,4 @@ go:
 install:
   - go get github.com/issue9/assert
   - go get github.com/issue9/watermark
+  - go get github.com/issue9/unique
