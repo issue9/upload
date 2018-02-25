@@ -138,24 +138,20 @@ func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 //
 // 返回相对于 u.Dir 的地址
 func (u *Upload) moveFile(head *multipart.FileHeader) (string, error) {
-	file, err := head.Open()
-	if err != nil {
-		return "", err
+	if head.Size > u.maxSize {
+		return "", ErrNotAllowSize
 	}
-	defer file.Close()
 
 	ext := strings.ToLower(filepath.Ext(head.Filename))
 	if !u.isAllowExt(ext) {
 		return "", ErrNotAllowExt
 	}
 
-	ok, err := u.isAllowSize(file)
+	file, err := head.Open()
 	if err != nil {
 		return "", err
 	}
-	if !ok {
-		return "", ErrNotAllowSize
-	}
+	defer file.Close()
 
 	path := u.getDestPath(ext)
 	ret := path
