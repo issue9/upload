@@ -23,10 +23,9 @@ const defaultMode os.FileMode = os.ModePerm
 
 // 常用错误类型
 var (
-	ErrNotAllowExt     = errors.New("不允许的文件上传类型")
-	ErrNotAllowSize    = errors.New("文件上传大小超过最大设定值或是文件大小为0")
-	ErrUnknownFileSize = errors.New("未知的文件大小")
-	ErrNoUploadFile    = errors.New("客户端没有上传文件")
+	ErrNotAllowExt  = errors.New("不允许的文件上传类型")
+	ErrNotAllowSize = errors.New("文件上传大小超过最大设定值")
+	ErrNoUploadFile = errors.New("客户端没有上传文件")
 )
 
 // Upload 用于处理文件上传
@@ -106,7 +105,11 @@ func (u *Upload) Dir() string {
 	return u.dir
 }
 
-// Do 执行上传的操作。会检测上传文件是否符合要求，只要有一个文件不符合，就会中断上传。
+// Do 执行上传的操作。
+//
+// 若是多文件上传，其中某一个文件不符合要求，会中断后续操作，
+// 但是已经处理成功的也会返回给用户，所以可能会出现两个返回参数都不会 nil 的情况。
+//
 // 返回的是相对于 Upload.dir 目录的文件名列表。
 func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
@@ -127,7 +130,7 @@ func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 	for _, head := range heads {
 		path, err := u.moveFile(head)
 		if err != nil {
-			return nil, err
+			return ret, err // 已经上传的内容 ret，需要正常返回给用户
 		}
 
 		ret = append(ret, path)
