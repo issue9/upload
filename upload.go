@@ -77,7 +77,7 @@ func New(dir, format string, maxSize int64, exts ...string) (*Upload, error) {
 		format:    format,
 		maxSize:   maxSize,
 		exts:      es,
-		filenames: unique.New(time.Now().Unix(), 1, 30, "", 36),
+		filenames: unique.String(),
 	}, nil
 }
 
