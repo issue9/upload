@@ -36,5 +36,5 @@ func (u *Upload) isAllowSize(file multipart.File) (bool, error) {
 		return false, ErrUnknownFileSize
 	}
 
-	return size > 0 && size <= u.maxSize, nil
+	return size >= 0 && size <= u.maxSize, nil
 }
