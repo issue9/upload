@@ -1,0 +1,8 @@
+github.com/issue9/assert v1.0.0 h1:NkLKrreEZgOdyl0aHlF8Yq2+Id7GsfEtU0rTK8nsN4E=
+github.com/issue9/assert v1.0.0/go.mod h1:KLwR3U/5rbCxqwAnV3aCr+dz07aoIyIfk2lefIVr2BA=
+github.com/issue9/autoinc v1.0.0 h1:8i8jl7oDJQd5lPJYGBlWHYoGirMCC6RmWVSmBgP3oqM=
+github.com/issue9/autoinc v1.0.0/go.mod h1:H0h4TqVwzgS2/0RMA9E3eOTHUwV2l3Fesf45sPxp5rQ=
+github.com/issue9/unique v1.0.0 h1:cOUa9REWcyWQKecjc0ED6ysD9VU7jaB6DP/uJ3PlMlA=
+github.com/issue9/unique v1.0.0/go.mod h1:mX6KX8iA6JyAYOckl+ZMnp7JWot1Cj0IyanEzOYhPOs=
+github.com/issue9/watermark v1.0.1 h1:6OeLxrqDhjoIXOlbJjicMBSM4Quq1QHBltc7Hx+GrLo=
+github.com/issue9/watermark v1.0.1/go.mod h1:A/GN02gOxZ92TxkqqS397okkxG/5BtmYLC5cnXd6e70=
