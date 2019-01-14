@@ -6,6 +6,7 @@ package upload
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/issue9/assert"
@@ -45,6 +46,11 @@ func TestUpload_getDestPath(t *testing.T) {
 	u, err := New("./testdir", "2006/01/02/", 10*1024, "gif", ".png", ".GIF")
 	a.NotError(err).NotNil(u)
 
-	t.Log(u.getDestPath(".png"))
-	t.Log(u.getDestPath(".jpeg"))
+	t.Log(u.getDestPath("xxx.png"))
+	t.Log(u.getDestPath("xxx.jpeg"))
+
+	u.SetFilename(func(filename string) string {
+		return filename
+	})
+	a.True(strings.HasSuffix(u.getDestPath("xxx.png"), "xxx.png"))
 }

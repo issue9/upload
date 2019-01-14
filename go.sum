@@ -1,8 +1,12 @@
 github.com/issue9/assert v1.0.0 h1:NkLKrreEZgOdyl0aHlF8Yq2+Id7GsfEtU0rTK8nsN4E=
 github.com/issue9/assert v1.0.0/go.mod h1:KLwR3U/5rbCxqwAnV3aCr+dz07aoIyIfk2lefIVr2BA=
-github.com/issue9/autoinc v1.0.0 h1:8i8jl7oDJQd5lPJYGBlWHYoGirMCC6RmWVSmBgP3oqM=
-github.com/issue9/autoinc v1.0.0/go.mod h1:H0h4TqVwzgS2/0RMA9E3eOTHUwV2l3Fesf45sPxp5rQ=
-github.com/issue9/unique v1.0.0 h1:cOUa9REWcyWQKecjc0ED6ysD9VU7jaB6DP/uJ3PlMlA=
-github.com/issue9/unique v1.0.0/go.mod h1:mX6KX8iA6JyAYOckl+ZMnp7JWot1Cj0IyanEzOYhPOs=
+github.com/issue9/assert v1.1.0 h1:vRl4oP7O7EfYpfXwVfC7kjo7cwzs+NsiAJDg1oyU2Fk=
+github.com/issue9/assert v1.1.0/go.mod h1:KLwR3U/5rbCxqwAnV3aCr+dz07aoIyIfk2lefIVr2BA=
+github.com/issue9/autoinc v1.0.3 h1:QvQqRx34lWIpyZ+5tr+UTRa1mI/WCIS4uFHP3VL6p2c=
+github.com/issue9/autoinc v1.0.3/go.mod h1:H0h4TqVwzgS2/0RMA9E3eOTHUwV2l3Fesf45sPxp5rQ=
+github.com/issue9/rands v1.1.1 h1:LN2oLhExq5MqK5bqIzZu18k26QK3eQIWBw3Cbm8fhq4=
+github.com/issue9/rands v1.1.1/go.mod h1:+34JYQL1EcxK79SFD3wOJklufb2967Tl9iom5jE1LF4=
+github.com/issue9/unique v1.1.1 h1:E6TVM1eRasJ43h+pvVvNn/tar55vOjd5sX6Rpodh0Wc=
+github.com/issue9/unique v1.1.1/go.mod h1:vzncDMl3GNOaZWZWVFVyFwhzxbWhljilgGkH1TpTSRY=
 github.com/issue9/watermark v1.0.1 h1:6OeLxrqDhjoIXOlbJjicMBSM4Quq1QHBltc7Hx+GrLo=
 github.com/issue9/watermark v1.0.1/go.mod h1:A/GN02gOxZ92TxkqqS397okkxG/5BtmYLC5cnXd6e70=

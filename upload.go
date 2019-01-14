@@ -35,7 +35,13 @@ type Upload struct {
 	maxSize   int64
 	exts      []string
 	watermark *watermark.Watermark
-	filenames *unique.Unique
+	filenames func(string) string
+}
+
+// UniqueFilename 生成唯一文件名
+func UniqueFilename(filename string) string {
+	ext := filepath.Ext(filename)
+	return unique.String().String() + ext
 }
 
 // New 声明一个 Upload 对象。
@@ -76,7 +82,7 @@ func New(dir, format string, maxSize int64, exts ...string) (*Upload, error) {
 		format:    format,
 		maxSize:   maxSize,
 		exts:      es,
-		filenames: unique.String(),
+		filenames: UniqueFilename,
 	}, nil
 }
 
@@ -94,9 +100,9 @@ func (u *Upload) isAllowExt(ext string) bool {
 	return false
 }
 
-func (u *Upload) getDestPath(ext string) string {
+func (u *Upload) getDestPath(filename string) string {
 	n := time.Now()
-	return n.Format(u.format) + u.filenames.String() + ext
+	return n.Format(u.format) + u.filenames(filename)
 }
 
 // Dir 获取上传文件的保存目录
@@ -157,7 +163,7 @@ func (u *Upload) moveFile(head *multipart.FileHeader) (string, error) {
 	}
 	defer file.Close()
 
-	path := u.getDestPath(ext)
+	path := u.getDestPath(head.Filename)
 	ret := path
 
 	path = u.dir + path
@@ -184,6 +190,11 @@ func (u *Upload) moveFile(head *multipart.FileHeader) (string, error) {
 	return ret, nil
 }
 
+// SetFilename 设置文件名的生成方式
+func (u *Upload) SetFilename(f func(filename string) string) {
+	u.filenames = f
+}
+
 // SetWatermarkFile 设置水印的相关参数。
 //
 // path 为水印文件的路径；
@@ -200,6 +211,8 @@ func (u *Upload) SetWatermarkFile(path string, padding int, pos watermark.Pos) e
 }
 
 // SetWatermark 设置水印的相关参数。
+//
+// 如果 w 为 nil，则表示取消水印
 func (u *Upload) SetWatermark(w *watermark.Watermark) {
 	u.watermark = w
 }
