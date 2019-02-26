@@ -1,6 +1,5 @@
 upload
 [![Build Status](https://travis-ci.org/issue9/upload.svg?branch=master)](https://travis-ci.org/issue9/upload)
-[![Build status](https://ci.appveyor.com/api/projects/status/g2rwsnbiatca03ix?svg=true)](https://ci.appveyor.com/project/caixw/upload)
 ======
 
 处理上传文件，若是图片还可以设置水印。
