@@ -8,5 +8,5 @@ github.com/issue9/rands v1.1.2 h1:krfrLi/gO+PA2gdJRdHKl/l9nOWzzWwEgSDseDPFqdY=
 github.com/issue9/rands v1.1.2/go.mod h1:raNhKX3V61BRr3e5elbHtEHKAUAAiBTzEEWzEYESYS4=
 github.com/issue9/unique v1.1.3 h1:QpvQ+pMJaXDQwphvraEJjDOKNKH/SzCu6N+XD3/RcHA=
 github.com/issue9/unique v1.1.3/go.mod h1:1YxpqETIgNlDB/Bcm2+UQHuyzfjGCjeDaGy2jnuuI9o=
-github.com/issue9/watermark v1.0.3 h1:3nOp9OZRxfulPtNkzj7BQyOPLuEXAsOiNeZgCFz1D0o=
-github.com/issue9/watermark v1.0.3/go.mod h1:Z5FifkewIUHvaKbep08xIWZ8zdrbPVCaT9IdQ6L6fjs=
+github.com/issue9/watermark v1.0.4 h1:OYs7IiGY2ws+iXmVAxh8rAAPEe5RDr8HR7TgWmJvy2U=
+github.com/issue9/watermark v1.0.4/go.mod h1:cars7bohIl5iynna+zFkaES6KaTOumWPAqiAN3W3l20=
