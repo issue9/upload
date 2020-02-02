@@ -1,6 +1,4 @@
-// Copyright 2015 by caixw, All rights reserved.
-// Use of this source code is governed by a MIT
-// license that can be found in the LICENSE file.
+// SPDX-License-Identifier: MIT
 
 // Package upload 提供文件上传的功能。
 //
