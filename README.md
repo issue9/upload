@@ -1,8 +1,11 @@
 upload
-[![Build Status](https://travis-ci.org/issue9/upload.svg?branch=master)](https://travis-ci.org/issue9/upload)
+[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fissue9%2Fupload%2Fbadge%3Fref%3Dmaster&style=flat)](https://actions-badge.atrox.dev/issue9/upload/goto?ref=master)
+[![license](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://opensource.org/licenses/MIT)
+[![codecov](https://codecov.io/gh/issue9/upload/branch/master/graph/badge.svg)](https://codecov.io/gh/issue9/upload)
 ======
 
 处理上传文件，若是图片还可以设置水印。
+
 ```go
 func(w http.ResponseWriter, r *http.Request) {
     u, err := upload.New("~/uploads/", "2006/01/02/", 1024*1024*10, ".txt", ".jpg", ".png")
@@ -14,20 +17,20 @@ func(w http.ResponseWriter, r *http.Request) {
 }
 ```
 
-
-### 安装
+安装
+----
 
 ```shell
 go get github.com/issue9/upload
 ```
 
-
-### 文档
+文档
+----
 
 [![Go Walker](https://gowalker.org/api/v1/badge)](https://gowalker.org/github.com/issue9/upload)
 [![GoDoc](https://godoc.org/github.com/issue9/upload?status.svg)](https://godoc.org/github.com/issue9/upload)
 
-
-### 版权
+版权
+----
 
 本项目采用 [MIT](https://opensource.org/licenses/MIT) 开源授权许可证，完整的授权说明可在 [LICENSE](LICENSE) 文件中找到。
