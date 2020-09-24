@@ -1,7 +1,8 @@
 upload
-[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fissue9%2Fupload%2Fbadge%3Fref%3Dmaster&style=flat)](https://actions-badge.atrox.dev/issue9/upload/goto?ref=master)
+[![Go](https://github.com/issue9/upload/workflows/Go/badge.svg)](https://github.com/issue9/upload/actions?query=workflow%3AGo)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/issue9/upload/branch/master/graph/badge.svg)](https://codecov.io/gh/issue9/upload)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/issue9/upload)](https://pkg.go.dev/github.com/issue9/upload)
 ======
 
 处理上传文件，若是图片还可以设置水印。
@@ -23,12 +24,6 @@ func(w http.ResponseWriter, r *http.Request) {
 ```shell
 go get github.com/issue9/upload
 ```
-
-文档
-----
-
-[![Go Walker](https://gowalker.org/api/v1/badge)](https://gowalker.org/github.com/issue9/upload)
-[![GoDoc](https://godoc.org/github.com/issue9/upload?status.svg)](https://godoc.org/github.com/issue9/upload)
 
 版权
 ----
