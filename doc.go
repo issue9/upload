@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-// Package upload 提供文件上传的功能。
+// Package upload 提供文件上传的功能
 //
 // 处理上传文件，若是图片还可以设置水印。
 //  func(w http.ResponseWriter, r *http.Request) {

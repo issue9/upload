@@ -42,7 +42,7 @@ func UniqueFilename(filename string) string {
 	return unique.String().String() + ext
 }
 
-// New 声明一个 Upload 对象。
+// New 声明一个 Upload 对象
 //
 // dir 上传文件的保存目录，若目录不存在，则会尝试创建;
 // format 路径的格式，只能是时间格式
@@ -84,7 +84,7 @@ func New(dir, format string, maxSize int64, exts ...string) (*Upload, error) {
 	}, nil
 }
 
-// 判断扩展名是否符合要求。
+// 判断扩展名是否符合要求
 func (u *Upload) isAllowExt(ext string) bool {
 	if len(ext) == 0 { // 没有扩展名，一律过滤
 		return false
@@ -108,7 +108,7 @@ func (u *Upload) Dir() string {
 	return u.dir
 }
 
-// Do 执行上传的操作。
+// Do 执行上传的操作
 //
 // 若是多文件上传，其中某一个文件不符合要求，会中断后续操作，
 // 但是已经处理成功的也会返回给用户，所以可能会出现两个返回参数都不会 nil 的情况。
@@ -142,7 +142,7 @@ func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 	return ret, nil
 }
 
-// 将上传的文件移到 u.Dir 目录下。
+// 将上传的文件移到 u.Dir 目录下
 //
 // 返回相对于 u.Dir 的地址
 func (u *Upload) moveFile(head *multipart.FileHeader) (string, error) {
@@ -193,7 +193,7 @@ func (u *Upload) SetFilename(f func(filename string) string) {
 	u.filenames = f
 }
 
-// SetWatermarkFile 设置水印的相关参数。
+// SetWatermarkFile 设置水印的相关参数
 //
 // path 为水印文件的路径；
 // padding 为水印在目标不图像上的留白大小；
@@ -208,7 +208,7 @@ func (u *Upload) SetWatermarkFile(path string, padding int, pos watermark.Pos) e
 	return nil
 }
 
-// SetWatermark 设置水印的相关参数。
+// SetWatermark 设置水印的相关参数
 //
 // 如果 w 为 nil，则表示取消水印
 func (u *Upload) SetWatermark(w *watermark.Watermark) {
