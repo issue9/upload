@@ -200,12 +200,10 @@ func (u *Upload) SetFilename(f func(filename string) string) {
 // pos 水印的位置。
 func (u *Upload) SetWatermarkFile(path string, padding int, pos watermark.Pos) error {
 	w, err := watermark.New(path, padding, pos)
-	if err != nil {
-		return err
+	if err == nil {
+		u.SetWatermark(w)
 	}
-
-	u.SetWatermark(w)
-	return nil
+	return err
 }
 
 // SetWatermark 设置水印的相关参数
