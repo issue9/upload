@@ -1,6 +1,4 @@
-github.com/issue9/assert v1.3.3 h1:3Xz5rGafXcaOpz7x6X2X3kBQVYxs1l9HFHSwmuDQ3KM=
 github.com/issue9/assert v1.3.3/go.mod h1:9Ger+iz8X7r1zMYYwEhh++2wMGWcNN2oVI+zIQXxcio=
-github.com/issue9/assert v1.3.4 h1:m9O+Nmi0ejRsLaTfQa349WTQtryQYHynBn6DFv6+sNY=
 github.com/issue9/assert v1.3.4/go.mod h1:9Ger+iz8X7r1zMYYwEhh++2wMGWcNN2oVI+zIQXxcio=
 github.com/issue9/assert v1.4.1 h1:gUtOpMTeaE4JTe9kACma5foOHBvVt1p5XTFrULDwdXI=
 github.com/issue9/assert v1.4.1/go.mod h1:Yktk83hAVl1SPSYtd9kjhBizuiBIqUQyj+D5SE2yjVY=
@@ -10,5 +8,5 @@ github.com/issue9/rands v1.1.4 h1:Wx1PzxTF57aao5Xq2/Q0nzRGBuRKWw6nw2emWfwl4hE=
 github.com/issue9/rands v1.1.4/go.mod h1:aCnoDR8ukczytaW+9FXuWS7YhhAK/5f+w8sM7P6UXqs=
 github.com/issue9/unique v1.3.0 h1:TaSD6XLbezW2YRI/Lq3GJEgpiY/jKS7QtIITg86CwY8=
 github.com/issue9/unique v1.3.0/go.mod h1:VSK2HDwW16oEiMUSJpj0R1mMTedtGyFb55atycKRE8I=
-github.com/issue9/watermark v1.1.0 h1:FtqCYXf5R8HWdVCVTSoOaxAOWi0nJ70DLXu/d1+ILsc=
-github.com/issue9/watermark v1.1.0/go.mod h1:t2vBdLTgmV/qiVUjrLjL3aVL4wf9zJLHF/OIETPstPU=
+github.com/issue9/watermark v1.2.0 h1:LXWN8YNIcp0ycIBlyX5hzJk8UPeVsZH35f2l774CEpE=
+github.com/issue9/watermark v1.2.0/go.mod h1:0ov5PKrPjneZUu1o4zqicmFVSCr/eSTHvkYChNDUuPo=
