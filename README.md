@@ -3,6 +3,7 @@ upload
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/issue9/upload/branch/master/graph/badge.svg)](https://codecov.io/gh/issue9/upload)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/issue9/upload)](https://pkg.go.dev/github.com/issue9/upload)
+[![Go version](https://img.shields.io/github/go-mod/go-version/issue9/upload)](https://golang.org)
 ======
 
 处理上传文件，若是图片还可以设置水印。
