@@ -6,4 +6,4 @@ require (
 	github.com/issue9/watermark v1.2.0
 )
 
-go 1.13
+go 1.16
