@@ -5,6 +5,7 @@ package upload
 import (
 	"errors"
 	"io"
+	"io/fs"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -17,7 +18,7 @@ import (
 )
 
 // 创建文件的默认权限，比如 Upload.dir 若不存在，会使用此权限创建目录。
-const defaultMode os.FileMode = os.ModePerm
+const defaultMode fs.FileMode = fs.ModePerm
 
 // 常用错误类型
 var (
@@ -104,14 +105,12 @@ func (u *Upload) getDestPath(filename string) string {
 }
 
 // Dir 获取上传文件的保存目录
-func (u *Upload) Dir() string {
-	return u.dir
-}
+func (u *Upload) Dir() string { return u.dir }
 
 // Do 执行上传的操作
 //
 // 若是多文件上传，其中某一个文件不符合要求，会中断后续操作，
-// 但是已经处理成功的也会返回给用户，所以可能会出现两个返回参数都不会 nil 的情况。
+// 但是已经处理成功的也会返回给用户，所以可能会出现两个返回参数都不为 nil 的情况。
 //
 // 返回的是相对于 Upload.dir 目录的文件名列表。
 func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
