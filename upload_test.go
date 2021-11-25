@@ -7,11 +7,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/issue9/assert"
+	"github.com/issue9/assert/v2"
 )
 
 func TestNew(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	u, err := New("./testdir", "2006/01/02/", 10*1024, "gif", ".png", ".GIF")
 	a.NotError(err).NotNil(u)
@@ -25,7 +25,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestUpload_isAllowExt(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	u, err := New("./testdir", "2006/01/02/", 10*1024, "gif", ".png", ".GIF")
 	a.NotError(err).NotNil(u)
@@ -39,7 +39,7 @@ func TestUpload_isAllowExt(t *testing.T) {
 }
 
 func TestUpload_getDestPath(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	u, err := New("./testdir", "2006/01/02/", 10*1024, "gif", ".png", ".GIF")
 	a.NotError(err).NotNil(u)

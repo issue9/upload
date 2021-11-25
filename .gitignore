@@ -23,8 +23,10 @@ _testmain.go
 *.test
 *.prof
 
-# vim
+# ide
 *.swp
+.idea/
+.vscode/
 
 # osx
 .DS_Store
