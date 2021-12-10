@@ -18,7 +18,7 @@ import (
 )
 
 // 创建文件的默认权限，比如 Upload.dir 若不存在，会使用此权限创建目录。
-const defaultMode fs.FileMode = fs.ModePerm
+const defaultMode = fs.ModePerm
 
 // 常用错误类型
 var (
@@ -29,6 +29,7 @@ var (
 
 // Upload 用于处理文件上传
 type Upload struct {
+	fs        fs.FS
 	dir       string
 	format    string
 	maxSize   int64
@@ -77,6 +78,7 @@ func New(dir, format string, maxSize int64, exts ...string) (*Upload, error) {
 	}
 
 	return &Upload{
+		fs:        os.DirFS(dir),
 		dir:       dir,
 		format:    format,
 		maxSize:   maxSize,
@@ -84,6 +86,8 @@ func New(dir, format string, maxSize int64, exts ...string) (*Upload, error) {
 		filenames: UniqueFilename,
 	}, nil
 }
+
+func (u *Upload) Open(name string) (fs.File, error) { return u.fs.Open(name) }
 
 // 判断扩展名是否符合要求
 func (u *Upload) isAllowExt(ext string) bool {
@@ -112,7 +116,7 @@ func (u *Upload) Dir() string { return u.dir }
 // 若是多文件上传，其中某一个文件不符合要求，会中断后续操作，
 // 但是已经处理成功的也会返回给用户，所以可能会出现两个返回参数都不为 nil 的情况。
 //
-// 返回的是相对于 Upload.dir 目录的文件名列表。
+// 返回的是相对于 Upload.Dir() 目录的文件名列表。
 func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		return nil, err
@@ -188,9 +192,7 @@ func (u *Upload) moveFile(head *multipart.FileHeader) (string, error) {
 }
 
 // SetFilename 设置文件名的生成方式
-func (u *Upload) SetFilename(f func(filename string) string) {
-	u.filenames = f
-}
+func (u *Upload) SetFilename(f func(filename string) string) { u.filenames = f }
 
 // SetWatermarkFile 设置水印的相关参数
 //
@@ -208,6 +210,4 @@ func (u *Upload) SetWatermarkFile(path string, padding int, pos watermark.Pos) e
 // SetWatermark 设置水印的相关参数
 //
 // 如果 w 为 nil，则表示取消水印
-func (u *Upload) SetWatermark(w *watermark.Watermark) {
-	u.watermark = w
-}
+func (u *Upload) SetWatermark(w *watermark.Watermark) { u.watermark = w }

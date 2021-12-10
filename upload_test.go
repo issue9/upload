@@ -3,12 +3,15 @@
 package upload
 
 import (
+	"io/fs"
 	"os"
 	"strings"
 	"testing"
 
 	"github.com/issue9/assert/v2"
 )
+
+var _ fs.FS = &Upload{}
 
 func TestNew(t *testing.T) {
 	a := assert.New(t, false)
