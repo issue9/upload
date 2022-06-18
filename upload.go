@@ -18,7 +18,7 @@ import (
 )
 
 // 创建文件的默认权限，比如 Upload.dir 若不存在，会使用此权限创建目录。
-const defaultMode = fs.ModePerm
+const defaultMode = 0666
 
 // 常用错误类型
 var (
@@ -46,8 +46,8 @@ func UniqueFilename(filename string) string {
 
 // New 声明一个 Upload 对象
 //
-// dir 上传文件的保存目录，若目录不存在，则会尝试创建;
-// format 路径的格式，只能是时间格式
+// dir 上传文件的保存目录，若目录不存在，则会尝试创建；
+// format 子目录的格式，只能是时间格式；
 // maxSize 允许上传文件的最大尺寸，单位为 byte；
 // exts 允许的扩展名，若为空，将不允许任何文件上传。
 func New(dir, format string, maxSize int64, exts ...string) (*Upload, error) {
@@ -104,8 +104,7 @@ func (u *Upload) isAllowExt(ext string) bool {
 }
 
 func (u *Upload) getDestPath(filename string) string {
-	n := time.Now()
-	return n.Format(u.format) + u.filenames(filename)
+	return time.Now().Format(u.format) + u.filenames(filename)
 }
 
 // Dir 获取上传文件的保存目录
