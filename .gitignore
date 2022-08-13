@@ -27,6 +27,7 @@ _testmain.go
 *.swp
 .idea/
 .vscode/
+.vs/
 
 # osx
 .DS_Store

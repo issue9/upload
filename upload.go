@@ -199,7 +199,20 @@ func (u *Upload) SetFilename(f func(filename string) string) { u.filenames = f }
 // padding 为水印在目标不图像上的留白大小；
 // pos 水印的位置。
 func (u *Upload) SetWatermarkFile(path string, padding int, pos watermark.Pos) error {
-	w, err := watermark.New(path, padding, pos)
+	w, err := watermark.NewFromFile(path, padding, pos)
+	if err == nil {
+		u.SetWatermark(w)
+	}
+	return err
+}
+
+// SetWatermarkFS 设置水印的相关参数
+//
+// path 为水印文件的路径；
+// padding 为水印在目标不图像上的留白大小；
+// pos 水印的位置。
+func (u *Upload) SetWatermarkFS(fs fs.FS, path string, padding int, pos watermark.Pos) error {
+	w, err := watermark.NewFromFS(fs, path, padding, pos)
 	if err == nil {
 		u.SetWatermark(w)
 	}
