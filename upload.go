@@ -18,7 +18,7 @@ import (
 )
 
 // 创建文件的默认权限，比如 Upload.dir 若不存在，会使用此权限创建目录。
-const defaultMode = 0666
+const defaultMode = fs.ModePerm
 
 // 常用错误类型
 var (
