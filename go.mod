@@ -1,4 +1,4 @@
-module github.com/issue9/upload
+module github.com/issue9/upload/v2
 
 require (
 	github.com/issue9/assert/v3 v3.0.4

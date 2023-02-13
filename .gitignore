@@ -33,3 +33,4 @@ _testmain.go
 .DS_Store
 
 example/upload/
+testdir/20*/

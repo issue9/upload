@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/issue9/upload"
+	"github.com/issue9/upload/v2"
 )
 
 const addr = ":8082"
@@ -40,7 +40,7 @@ func get(w http.ResponseWriter) {
 }
 
 func post(w http.ResponseWriter, r *http.Request) {
-	u, err := upload.New("./upload", "2006/1/2/", 1024*1024, ".txt", ".gif", ".png")
+	u, err := upload.New("./upload", "2006/1/2/", 1024*1024, upload.Filename, ".txt", ".gif", ".png")
 	if err != nil {
 		log.Println(err)
 	}
