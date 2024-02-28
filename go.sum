@@ -1,5 +1,4 @@
-github.com/issue9/assert/v3 v3.0.0/go.mod h1:yft/uaskRpwQTyBT3n1zRl91SR1wNlO4fLZHzOa4bdM=
-github.com/issue9/assert/v3 v3.0.4 h1:WsYZQ6PQmM/pGFrbkn5GIXjWeVZHv+wcl2829UTX1Qc=
-github.com/issue9/assert/v3 v3.0.4/go.mod h1:yft/uaskRpwQTyBT3n1zRl91SR1wNlO4fLZHzOa4bdM=
-github.com/issue9/watermark v1.2.2 h1:NZKq4hgnvlJAkZBsN4ukD4/CM+PXV1auQejng1tfuZM=
-github.com/issue9/watermark v1.2.2/go.mod h1:KMwBYtBwNnMWCNn+jLpOQTV5B8cT73FzzD/lsXKwyf0=
+github.com/issue9/assert/v4 v4.1.1 h1:OhPE8SB8n/qZCNGLQa+6MQtr/B3oON0JAVj68k8jJlc=
+github.com/issue9/assert/v4 v4.1.1/go.mod h1:v7qDRXi7AsaZZNh8eAK2rkLJg5/clztqQGA1DRv9Lv4=
+github.com/issue9/watermark v1.2.3 h1:U+W3kvtElxrB++1FHqNlALEClnXIiJyheGARe5r7O3Q=
+github.com/issue9/watermark v1.2.3/go.mod h1:QtlFopr7R0o+Tnc4Vzrn3AFhJX9jqsKbNr2HTsP3PWU=

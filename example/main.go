@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2015-2024 caixw
+//
 // SPDX-License-Identifier: MIT
 
 // 简单的 upload 包的示例程序，可以一次上传一个或是多个功能！
