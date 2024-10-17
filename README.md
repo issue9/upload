@@ -2,7 +2,7 @@ upload
 [![Go](https://github.com/issue9/upload/workflows/Go/badge.svg)](https://github.com/issue9/upload/actions?query=workflow%3AGo)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/issue9/upload/branch/master/graph/badge.svg)](https://codecov.io/gh/issue9/upload)
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/issue9/upload/v2)](https://pkg.go.dev/github.com/issue9/upload/v2)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/issue9/upload/v3)](https://pkg.go.dev/github.com/issue9/upload/v3)
 [![Go version](https://img.shields.io/github/go-mod/go-version/issue9/upload)](https://golang.org)
 ======
 
@@ -24,7 +24,7 @@ func(w http.ResponseWriter, r *http.Request) {
 ----
 
 ```shell
-go get github.com/issue9/upload/v2
+go get github.com/issue9/upload/v3
 ```
 
 版权

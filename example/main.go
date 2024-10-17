@@ -9,7 +9,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/issue9/upload/v2"
+	"github.com/issue9/upload/v3"
 )
 
 const addr = ":8082"
