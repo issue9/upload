@@ -21,7 +21,7 @@ import (
 )
 
 // 创建文件的默认权限，比如 Upload.dir 若不存在，会使用此权限创建目录。
-const defaultMode = fs.ModePerm
+const presetMode = fs.ModePerm
 
 // 常用错误类型
 var (
@@ -47,7 +47,7 @@ func ErrNotAllowSize() error { return errNotAllowSize }
 
 func ErrNoUploadFile() error { return errNoUploadFile }
 
-// New 声明一个 Upload 对象
+// New 声明文件上传的对象
 //
 // dir 上传文件的保存目录，若目录不存在，则会尝试创建；
 //
@@ -85,7 +85,7 @@ func New(dir, format string, maxSize int64, f func(string, string) string, exts 
 	}
 
 	// 若不存在目录，则尝试创建
-	if err := os.MkdirAll(dir, defaultMode); err != nil {
+	if err := os.MkdirAll(dir, presetMode); err != nil {
 		return nil, err
 	}
 
@@ -129,9 +129,10 @@ func (u *Upload) Dir() string { return u.dir }
 // 若是多文件上传，其中某一个文件不符合要求，会中断后续操作，
 // 但是已经处理成功的也会返回给用户，所以可能会出现两个返回参数都不为 nil 的情况。
 //
-// 返回的是相对于 Upload.Dir() 目录的文件名列表。
+// field 表示用于上传的字段名称；
+// 返回的是相对于 [Upload.Dir] 目录的文件名列表。
 func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(u.maxSize); err != nil {
 		return nil, err
 	}
 
@@ -179,7 +180,7 @@ func (u *Upload) moveFile(head *multipart.FileHeader) (string, error) {
 
 	relDir := time.Now().Format(u.format)
 	dir := u.dir + relDir
-	if err = os.MkdirAll(dir, defaultMode); err != nil { // 若路径不存在，则创建
+	if err = os.MkdirAll(dir, presetMode); err != nil { // 若路径不存在，则创建
 		return "", err
 	}
 
@@ -236,15 +237,18 @@ func (u *Upload) SetWatermark(w *watermark.Watermark) { u.watermark = w }
 
 // Filename 在 dir 下为 s 生成唯一文件名
 func Filename(dir, s string) string {
-	path := dir + s
+	ext := filepath.Ext(s)
+	base := strings.TrimSuffix(s, ext)
+
 	count := 1
+	path := dir + s
 
 RET:
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
 		return path
 	}
 
-	ext := filepath.Ext(s)
-	path = dir + strings.TrimSuffix(s, ext) + "_" + strconv.Itoa(count) + ext
+	path = dir + base + "_" + strconv.Itoa(count) + ext
+	count++
 	goto RET
 }
