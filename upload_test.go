@@ -22,22 +22,27 @@ var _ fs.FS = &Upload{}
 
 func TestNew(t *testing.T) {
 	a := assert.New(t, false)
+	s, err := NewLocalSaver("./testdir", Day, Filename)
+	a.NotError(err).NotNil(s)
 
-	u, err := New("./testdir", "2006/01/02/", 10*1024, Filename, "gif", ".png", ".GIF")
-	a.NotError(err).NotNil(u)
+	u := New(s, 10*1024, "gif", ".png", ".GIF")
+	a.NotNil(u)
 	// 自动转换成小写，且加上最前面的.符号
 	a.Equal(u.exts, []string{".gif", ".png", ".gif"})
-	a.Equal(u.dir, "./testdir"+string(os.PathSeparator))
+	a.Equal(s.(*localSaver).dir, "./testdir"+string(os.PathSeparator))
 
-	// dir为一个文件
-	u, err = New("./testdir/file", "2006/01/02/", 10*1024, Filename, "gif", ".png", ".GIF")
-	a.Error(err).Nil(u)
+	// dir 为一个文件
+	s, err = NewLocalSaver("./testdir/file", Day, Filename)
+	a.Error(err).Nil(s)
 }
 
 func TestUpload_isAllowExt(t *testing.T) {
 	a := assert.New(t, false)
-	u, err := New("./testdir", "2006/01/02/", 10*1024, Filename, "gif", ".png", ".GIF")
-	a.NotError(err).NotNil(u)
+	s, err := NewLocalSaver("./testdir", Day, Filename)
+	a.NotError(err).NotNil(s)
+
+	u := New(s, 10*1024, "gif", ".png", ".GIF")
+	a.NotError(err)
 
 	a.True(u.isAllowExt(".gif"))
 	a.True(u.isAllowExt(".png"))
@@ -50,8 +55,11 @@ func TestUpload_isAllowExt(t *testing.T) {
 
 func TestUpload_Do(t *testing.T) {
 	a := assert.New(t, false)
-	u, err := New("./testdir", Day, 10*1024, Filename, "xml")
-	a.NotError(err).NotNil(u)
+	s, err := NewLocalSaver("./testdir", Day, Filename)
+	a.NotError(err).NotNil(s)
+
+	u := New(s, 10*1024, "xml")
+	a.NotError(err)
 	filename := "./testdir/file.xml"
 
 	f, err := os.Open(filename)
@@ -79,14 +87,4 @@ func TestUpload_Do(t *testing.T) {
 	a.NotError(err).
 		Length(paths, 1).
 		Equal(paths[0], path.Join(time.Now().Format(Day), "file.xml"))
-}
-
-func TestFilename(t *testing.T) {
-	a := assert.New(t, false)
-
-	f := Filename("./testdir/", "abc", "")
-	a.Equal(f, "./testdir/abc")
-
-	f = Filename("./testdir/", "file.xml", ".xml")
-	a.Equal(f, "./testdir/file_1.xml")
 }

@@ -10,19 +10,12 @@ import (
 	"io/fs"
 	"mime/multipart"
 	"net/http"
-	"os"
-	"path"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/issue9/watermark"
 )
-
-// 创建文件的默认权限，比如 Upload.dir 若不存在，会使用此权限创建目录。
-const presetMode = fs.ModePerm
 
 // 常用错误类型
 var (
@@ -31,24 +24,13 @@ var (
 	errNoUploadFile = errors.New("客户端没有上传文件")
 )
 
-// 为 [New] 的参数 format 所允许的几种取值
-const (
-	Year  = "2006/"
-	Month = "2006/01/"
-	Day   = "2006/01/02/"
-)
-
 // Upload 用于处理文件上传
 type Upload struct {
-	fs        fs.FS
-	dir       string
-	format    string
+	saver     Saver
 	maxSize   int64
 	exts      []string
 	watermark *watermark.Watermark
-	filenames func(dir, filename, ext string) string
-
-	moveMux sync.Mutex
+	moveMux   sync.Mutex
 }
 
 func ErrNotAllowExt() error { return errNotAllowExt }
@@ -59,22 +41,10 @@ func ErrNoUploadFile() error { return errNoUploadFile }
 
 // New 声明文件上传的对象
 //
-// dir 上传文件的保存目录，若目录不存在，则会尝试创建；
-//
-// format 子目录的格式，只能是时间格式，取值只能是 [Year]、[Month] 和 [Day]；
-//
 // maxSize 允许上传文件的最大尺寸，单位为 byte；
 //
-// f 设置文件名的生成方式，要求文件在同一目录下具有唯一性，其类型如下：
-//
-//	func(dir, filename, ext string) string
-//
-// dir 为文件夹名称，以 / 结尾，filename 为用户上传的文件名，ext 为 filename 中的扩展名部分，
-// 返回值是 dir + filename 的路径，实现者可能要调整 filename 的值，以保证在 dir 下唯一。
-// 如果为空，则会采用 [Filename] 作为默认值；
-//
 // exts 允许的扩展名，若为空，将不允许任何文件上传。
-func New(dir, format string, maxSize int64, f func(string, string, string) string, exts ...string) (*Upload, error) {
+func New(saver Saver, maxSize int64, exts ...string) *Upload {
 	// 确保所有的后缀名都是以.作为开始符号的。
 	es := make([]string, 0, len(exts))
 	for _, ext := range exts {
@@ -84,42 +54,14 @@ func New(dir, format string, maxSize int64, f func(string, string, string) strin
 		es = append(es, strings.ToLower(ext))
 	}
 
-	// 确保 dir 最后一个字符为目录分隔符。
-	last := dir[len(dir)-1]
-	if last != '/' && last != filepath.Separator {
-		dir += string(filepath.Separator)
-	}
-
-	if format != Year && format != Month && format != Day {
-		panic("无效的参数 format")
-	}
-
-	// 若不存在目录，则尝试创建
-	if err := os.MkdirAll(dir, presetMode); err != nil {
-		return nil, err
-	}
-
-	// 确保 dir 目录存在。
-	// NOTE:此处的 dir 最后个字符为/，所以不用判断是否为目录。
-	if _, err := os.Stat(dir); err != nil {
-		return nil, err
-	}
-
-	if f == nil {
-		f = Filename
-	}
-
 	return &Upload{
-		fs:        os.DirFS(dir),
-		dir:       dir,
-		format:    format,
-		maxSize:   maxSize,
-		exts:      es,
-		filenames: f,
-	}, nil
+		saver:   saver,
+		maxSize: maxSize,
+		exts:    es,
+	}
 }
 
-func (u *Upload) Open(name string) (fs.File, error) { return u.fs.Open(name) }
+func (u *Upload) Open(name string) (fs.File, error) { return u.saver.Open(name) }
 
 // 判断扩展名是否符合要求
 func (u *Upload) isAllowExt(ext string) bool {
@@ -134,9 +76,6 @@ func (u *Upload) isAllowExt(ext string) bool {
 	}
 	return false
 }
-
-// Dir 获取上传文件的保存目录
-func (u *Upload) Dir() string { return u.dir }
 
 // Do 执行上传的操作
 //
@@ -159,15 +98,9 @@ func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 		return nil, ErrNoUploadFile()
 	}
 
-	relDir := time.Now().Format(u.format)
-	dir := u.dir + relDir
-	if err := os.MkdirAll(dir, presetMode); err != nil { // 若路径不存在，则创建
-		return nil, err
-	}
-
 	ret := make([]string, 0, len(heads))
 	for _, head := range heads {
-		path, err := u.moveFile(dir, relDir, head)
+		path, err := u.moveFile(head)
 		if err != nil {
 			return ret, err // 如果出错，则将已经移入目录的文件列表返回给用户。
 		}
@@ -181,7 +114,7 @@ func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 // 返回相对于 u.Dir 的地址
 // dir 文件需要移入的地址；
 // relDir dir 参数相对于 u.Dir 的地址；
-func (u *Upload) moveFile(dir, relDir string, head *multipart.FileHeader) (string, error) {
+func (u *Upload) moveFile(head *multipart.FileHeader) (string, error) {
 	if head.Size > u.maxSize {
 		return "", ErrNotAllowSize()
 	}
@@ -191,42 +124,25 @@ func (u *Upload) moveFile(dir, relDir string, head *multipart.FileHeader) (strin
 		return "", ErrNotAllowExt()
 	}
 
-	p, destFile, err := u.createFile(dir, head.Filename, ext)
-	if err != nil {
-		return "", err
-	}
-	defer destFile.Close()
-
 	srcFile, err := head.Open()
 	if err != nil {
 		return "", err
 	}
 	defer srcFile.Close()
 
-	if _, err = io.Copy(destFile, srcFile); err != nil {
-		return "", err
-	}
-
 	if u.watermark != nil && watermark.IsAllowExt(ext) {
-		if err = u.watermark.Mark(destFile, ext); err != nil {
+		// NOTE: srcFile 目前是可以转换为 io.ReadWriteSeeker 类型的
+		if err = u.watermark.Mark(srcFile.(io.ReadWriteSeeker), ext); err != nil {
 			return "", err
 		}
 	}
 
-	return path.Join(relDir, filepath.Base(p)), nil
-}
-
-// 主要是为了缩小 moveMux 的范围，只要保证在创建文件时是有效的就行。
-func (u *Upload) createFile(dir, filename, ext string) (string, *os.File, error) {
-	u.moveMux.Lock()
-	defer u.moveMux.Unlock()
-
-	p := u.filenames(dir, filename, ext)
-	destFile, err := os.Create(p)
+	p, err := u.saver.Save(srcFile, head.Filename, ext)
 	if err != nil {
-		return "", nil, err
+		return "", err
 	}
-	return p, destFile, nil
+
+	return p, nil
 }
 
 // SetWatermarkFile 设置水印的相关参数
@@ -259,20 +175,3 @@ func (u *Upload) SetWatermarkFS(fs fs.FS, path string, padding int, pos watermar
 //
 // 如果 w 为 nil，则表示取消水印
 func (u *Upload) SetWatermark(w *watermark.Watermark) { u.watermark = w }
-
-// Filename 在 dir 下为 s 生成唯一文件名
-func Filename(dir, s, ext string) string {
-	base := strings.TrimSuffix(s, ext)
-
-	count := 1
-	path := dir + s
-
-RET:
-	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-		return path
-	}
-
-	path = dir + base + "_" + strconv.Itoa(count) + ext
-	count++
-	goto RET
-}

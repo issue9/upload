@@ -42,7 +42,12 @@ func get(w http.ResponseWriter) {
 }
 
 func post(_ http.ResponseWriter, r *http.Request) {
-	u, err := upload.New("./upload", upload.Day, 1024*1024, upload.Filename, ".txt", ".gif", ".png")
+	s, err := upload.NewLocalSaver("~/uploads/", "2006/01/02/", upload.Filename)
+	if err != nil {
+		log.Println(err)
+	}
+
+	u := upload.New(s, 1024*1024, ".txt", ".gif", ".png")
 	if err != nil {
 		log.Println(err)
 	}
