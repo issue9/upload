@@ -41,8 +41,8 @@ func get(w http.ResponseWriter) {
 	}
 }
 
-func post(w http.ResponseWriter, r *http.Request) {
-	u, err := upload.New("./upload", "2006/1/2/", 1024*1024, upload.Filename, ".txt", ".gif", ".png")
+func post(_ http.ResponseWriter, r *http.Request) {
+	u, err := upload.New("./upload", upload.Day, 1024*1024, upload.Filename, ".txt", ".gif", ".png")
 	if err != nil {
 		log.Println(err)
 	}
