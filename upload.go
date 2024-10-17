@@ -60,7 +60,8 @@ func ErrNoUploadFile() error { return errNoUploadFile }
 //	func(dir, filename string) string
 //
 // dir 为文件夹名称，以 / 结尾，filename 为用户上传的文件名，
-// 返回值是 dir + filename 的路径，实现者可能要调整 filename 的值，以保证在 dir 下唯一；
+// 返回值是 dir + filename 的路径，实现者可能要调整 filename 的值，以保证在 dir 下唯一。
+// 如果为空，则会采用 [Filename] 作为默认值；
 //
 // exts 允许的扩展名，若为空，将不允许任何文件上传。
 func New(dir, format string, maxSize int64, f func(string, string) string, exts ...string) (*Upload, error) {
@@ -95,6 +96,10 @@ func New(dir, format string, maxSize int64, f func(string, string) string, exts 
 		return nil, err
 	}
 
+	if f == nil{
+		f=Filename
+	}
+
 	return &Upload{
 		fs:        os.DirFS(dir),
 		dir:       dir,
@@ -126,11 +131,11 @@ func (u *Upload) Dir() string { return u.dir }
 
 // Do 执行上传的操作
 //
-// 若是多文件上传，其中某一个文件不符合要求，会中断后续操作，
-// 但是已经处理成功的也会返回给用户，所以可能会出现两个返回参数都不为 nil 的情况。
-//
 // field 表示用于上传的字段名称；
 // 返回的是相对于 [Upload.Dir] 目录的文件名列表。
+//
+// NOTE: 若是多文件上传，其中某一个文件不符合要求，会中断后续操作，
+// 但是已经处理成功的也会返回给用户，所以可能会出现两个返回参数都不为 nil 的情况。
 func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 	if err := r.ParseMultipartForm(u.maxSize); err != nil {
 		return nil, err
@@ -150,9 +155,8 @@ func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 	for _, head := range heads {
 		path, err := u.moveFile(head)
 		if err != nil {
-			return ret, err // 已经上传的内容 ret，需要正常返回给用户
+			return ret, err // 如果出错，则将已经移入目录的文件列表返回给用户。
 		}
-
 		ret = append(ret, path)
 	}
 
