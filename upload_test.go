@@ -50,8 +50,7 @@ func TestUpload_isAllowExt(t *testing.T) {
 
 func TestUpload_Do(t *testing.T) {
 	a := assert.New(t, false)
-	format := "2006/01/02/"
-	u, err := New("./testdir", format, 10*1024, Filename, "xml")
+	u, err := New("./testdir", Day, 10*1024, Filename, "xml")
 	a.NotError(err).NotNil(u)
 	filename := "./testdir/file.xml"
 
@@ -79,15 +78,15 @@ func TestUpload_Do(t *testing.T) {
 	paths, err := u.Do("file", r)
 	a.NotError(err).
 		Length(paths, 1).
-		Equal(paths[0], path.Join(time.Now().Format(format), "file.xml"))
+		Equal(paths[0], path.Join(time.Now().Format(Day), "file.xml"))
 }
 
 func TestFilename(t *testing.T) {
 	a := assert.New(t, false)
 
-	f := Filename("./testdir/", "abc")
+	f := Filename("./testdir/", "abc", "")
 	a.Equal(f, "./testdir/abc")
 
-	f = Filename("./testdir/", "file")
-	a.Equal(f, "./testdir/file_1")
+	f = Filename("./testdir/", "file.xml", ".xml")
+	a.Equal(f, "./testdir/file_1.xml")
 }
