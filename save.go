@@ -109,7 +109,7 @@ func NewLocalSaver(dir, baseURL, format string, f func(dir, filename, ext string
 	}, nil
 }
 
-func (s *localSaver) Open(name string) (fs.File, error) { return s.Open(name) }
+func (s *localSaver) Open(name string) (fs.File, error) { return s.fs.Open(name) }
 
 func (s *localSaver) Save(f multipart.File, filename string, ext string) (string, error) {
 	relDir := time.Now().Format(s.format)
