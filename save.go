@@ -43,6 +43,7 @@ const (
 type localSaver struct {
 	fs        fs.FS
 	dir       string
+	baseURL   string
 	format    string
 	filenames func(dir, filename, ext string) string
 	moveMux   sync.Mutex
@@ -51,6 +52,8 @@ type localSaver struct {
 // NewLocalSaver 实现了一个基于本地文件系统的 [Saver] 接口
 //
 // dir 上传文件的保存目录，若目录不存在，则会尝试创建；
+//
+// baseURL 为上传的文件生成访问地址的前缀；
 //
 // format 子目录的格式，只能是时间格式，取值只能是 [Year]、[Month] 和 [Day]；
 //
@@ -61,7 +64,7 @@ type localSaver struct {
 // dir 为文件夹名称，以 / 结尾，filename 为用户上传的文件名，ext 为 filename 中的扩展名部分，
 // 返回值是 dir + filename 的路径，实现者可能要调整 filename 的值，以保证在 dir 下唯一。
 // 如果为空，则会采用 [Filename] 作为默认值；
-func NewLocalSaver(dir, format string, f func(dir, filename, ext string) string) (Saver, error) {
+func NewLocalSaver(dir, baseURL, format string, f func(dir, filename, ext string) string) (Saver, error) {
 	// 确保 dir 最后一个字符为目录分隔符。
 	last := dir[len(dir)-1]
 	if last != '/' && last != filepath.Separator {
@@ -93,9 +96,14 @@ func NewLocalSaver(dir, format string, f func(dir, filename, ext string) string)
 		f = Filename
 	}
 
+	if baseURL != "" && baseURL[len(baseURL)-1] != '/' {
+		baseURL += "/"
+	}
+
 	return &localSaver{
 		fs:        os.DirFS(dir),
 		dir:       dir,
+		baseURL:   baseURL,
 		format:    format,
 		filenames: f,
 	}, nil
@@ -120,7 +128,7 @@ func (s *localSaver) Save(f multipart.File, filename string, ext string) (string
 		return "", err
 	}
 
-	return path.Join(relDir, filepath.Base(p)), nil
+	return s.baseURL + path.Join(relDir, filepath.Base(p)), nil
 }
 
 // 主要是为了缩小 moveMux 的范围，只要保证在创建文件时是有效的就行。

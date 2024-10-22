@@ -22,7 +22,7 @@ var _ fs.FS = &Upload{}
 
 func TestNew(t *testing.T) {
 	a := assert.New(t, false)
-	s, err := NewLocalSaver("./testdir", Day, Filename)
+	s, err := NewLocalSaver("./testdir", "", Day, Filename)
 	a.NotError(err).NotNil(s)
 
 	u := New(s, 10*1024, "gif", ".png", ".GIF")
@@ -32,13 +32,13 @@ func TestNew(t *testing.T) {
 	a.Equal(s.(*localSaver).dir, "./testdir"+string(os.PathSeparator))
 
 	// dir 为一个文件
-	s, err = NewLocalSaver("./testdir/file", Day, Filename)
+	s, err = NewLocalSaver("./testdir/file", "", Day, Filename)
 	a.Error(err).Nil(s)
 }
 
 func TestUpload_isAllowExt(t *testing.T) {
 	a := assert.New(t, false)
-	s, err := NewLocalSaver("./testdir", Day, Filename)
+	s, err := NewLocalSaver("./testdir", "", Day, Filename)
 	a.NotError(err).NotNil(s)
 
 	u := New(s, 10*1024, "gif", ".png", ".GIF")
@@ -55,7 +55,7 @@ func TestUpload_isAllowExt(t *testing.T) {
 
 func TestUpload_Do(t *testing.T) {
 	a := assert.New(t, false)
-	s, err := NewLocalSaver("./testdir", Day, Filename)
+	s, err := NewLocalSaver("./testdir", "https://example.com", Day, Filename)
 	a.NotError(err).NotNil(s)
 
 	u := New(s, 10*1024, "xml")
@@ -86,5 +86,5 @@ func TestUpload_Do(t *testing.T) {
 	paths, err := u.Do("file", r)
 	a.NotError(err).
 		Length(paths, 1).
-		Equal(paths[0], path.Join(time.Now().Format(Day), "file.xml"))
+		Equal(paths[0], "https://example.com/"+path.Join(time.Now().Format(Day), "file.xml"))
 }
