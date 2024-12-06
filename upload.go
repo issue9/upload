@@ -61,6 +61,9 @@ func New(saver Saver, maxSize int64, exts ...string) *Upload {
 	}
 }
 
+// Open [fs.FS] 接口
+//
+// 等同于 [Saver.Open]
 func (u *Upload) Open(name string) (fs.File, error) { return u.saver.Open(name) }
 
 // 判断扩展名是否符合要求
@@ -80,7 +83,6 @@ func (u *Upload) isAllowExt(ext string) bool {
 // Do 执行上传的操作
 //
 // field 表示用于上传的字段名称；
-// 返回的是相对于 [Upload.Dir] 目录的文件名列表。
 //
 // NOTE: 若是多文件上传，其中某一个文件不符合要求，会中断后续操作，
 // 但是已经处理成功的也会返回给用户，所以可能会出现两个返回参数都不为 nil 的情况。
@@ -109,11 +111,7 @@ func (u *Upload) Do(field string, r *http.Request) ([]string, error) {
 	return ret, nil
 }
 
-// 将上传的文件移到 u.Dir 目录下
-//
-// 返回相对于 u.Dir 的地址
-// dir 文件需要移入的地址；
-// relDir dir 参数相对于 u.Dir 的地址；
+// 将上传的文件移到 [Saver]
 func (u *Upload) moveFile(head *multipart.FileHeader) (string, error) {
 	if head.Size > u.maxSize {
 		return "", ErrNotAllowSize()
