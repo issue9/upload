@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 caixw
+// SPDX-FileCopyrightText: 2025 caixw
 //
 // SPDX-License-Identifier: MIT
 
@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-// 创建文件的默认权限，比如 Upload.dir 若不存在，会使用此权限创建目录。
+// 创建文件的默认权限，比如 [NewLocalSaver] 的参数 dir 若不存在，会使用此权限创建目录。
 const presetMode = fs.ModePerm
 
 // Saver 定义了用于保存上传内容的接口

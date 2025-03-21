@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015-2024 caixw
+// SPDX-FileCopyrightText: 2015-2025 caixw
 //
 // SPDX-License-Identifier: MIT
 
@@ -11,6 +11,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 
@@ -67,18 +68,7 @@ func New(saver Saver, maxSize int64, exts ...string) *Upload {
 func (u *Upload) Open(name string) (fs.File, error) { return u.saver.Open(name) }
 
 // 判断扩展名是否符合要求
-func (u *Upload) isAllowExt(ext string) bool {
-	if len(ext) == 0 { // 没有扩展名，一律过滤
-		return false
-	}
-
-	for _, e := range u.exts {
-		if e == ext {
-			return true
-		}
-	}
-	return false
-}
+func (u *Upload) isAllowExt(ext string) bool { return slices.Contains(u.exts, ext) }
 
 // Do 执行上传的操作
 //
@@ -160,7 +150,7 @@ func (u *Upload) SetWatermarkFile(path string, padding int, pos watermark.Pos) e
 //
 // path 为水印文件的路径；
 // padding 为水印在目标不图像上的留白大小；
-// pos 水印的位置。
+// pos 水印的位置；
 func (u *Upload) SetWatermarkFS(fs fs.FS, path string, padding int, pos watermark.Pos) error {
 	w, err := watermark.NewFromFS(fs, path, padding, pos)
 	if err == nil {
@@ -173,3 +163,6 @@ func (u *Upload) SetWatermarkFS(fs fs.FS, path string, padding int, pos watermar
 //
 // 如果 w 为 nil，则表示取消水印
 func (u *Upload) SetWatermark(w *watermark.Watermark) { u.watermark = w }
+
+// AllowWatermarkExts 允许的水印类型
+func AllowWatermarkExts() []string { return watermark.AllowExts() }
