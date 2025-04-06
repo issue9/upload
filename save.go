@@ -27,7 +27,7 @@ type Saver interface {
 
 	// Save 保存用户上传的文件
 	//
-	// filename 为用户上传时的文件名，包含扩展名部分；
+	// filename 为用户上传时的文件名，不包含扩展名部分；
 	// ext 为 filename 中的扩展名部分；
 	// 返回该文件对应的唯一标记。
 	Save(file multipart.File, filename string, ext string) (string, error)
@@ -35,6 +35,7 @@ type Saver interface {
 
 // 为 [New] 的参数 format 所允许的几种取值
 const (
+	None = ""
 	Year  = "2006/"
 	Month = "2006/01/"
 	Day   = "2006/01/02/"
@@ -55,7 +56,7 @@ type localSaver struct {
 //
 // baseURL 为上传的文件生成访问地址的前缀；
 //
-// format 子目录的格式，只能是时间格式，取值只能是 [Year]、[Month] 和 [Day]；
+// format 子目录的格式，只能是时间格式，取值只能是 [None]、[Year]、[Month] 和 [Day]；
 //
 // f 设置文件名的生成方式，要求文件在同一目录下具有唯一性，其类型如下：
 //
@@ -77,7 +78,7 @@ func NewLocalSaver(dir, baseURL, format string, f func(dir, filename, ext string
 		dir += string(filepath.Separator)
 	}
 
-	if format != Year && format != Month && format != Day {
+	if format != Year && format != Month && format != Day &&format != None{
 		panic("无效的参数 format")
 	}
 
@@ -112,8 +113,12 @@ func NewLocalSaver(dir, baseURL, format string, f func(dir, filename, ext string
 func (s *localSaver) Open(name string) (fs.File, error) { return s.fs.Open(name) }
 
 func (s *localSaver) Save(f multipart.File, filename string, ext string) (string, error) {
-	relDir := time.Now().Format(s.format)
+	var relDir string
+	if s.format != None {
+		relDir = time.Now().Format(s.format)
+	}
 	dir := s.dir + relDir
+
 	if err := os.MkdirAll(dir, presetMode); err != nil { // 若路径不存在，则创建
 		return "", err
 	}

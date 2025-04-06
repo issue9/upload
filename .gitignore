@@ -34,3 +34,4 @@ _testmain.go
 
 example/upload/
 testdir/20*/
+testdir/file_1.xml

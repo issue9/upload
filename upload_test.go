@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015-2024 caixw
+// SPDX-FileCopyrightText: 2015-2025 caixw
 //
 // SPDX-License-Identifier: MIT
 
@@ -65,6 +65,46 @@ func TestUpload_Do(t *testing.T) {
 	f, err := os.Open(filename)
 	a.NotError(err).NotNil(f)
 
+	body,ct :=formData(a, filename)
+
+	r, err := http.NewRequest(http.MethodPost, "/upload", body)
+	r.Header.Add("content-type", ct)
+	a.NotError(err).NotNil(r)
+
+	paths, err := u.Do("file", r)
+	a.NotError(err).
+		Length(paths, 1).
+		Equal(paths[0], "https://example.com/"+path.Join(time.Now().Format(Day), "file.xml"))
+}
+
+func TestUpload_Do_None(t *testing.T) {
+	a := assert.New(t, false)
+	s, err := NewLocalSaver("./testdir", "https://example.com", None, Filename)
+	a.NotError(err).NotNil(s)
+
+	u := New(s, 10*1024, "xml")
+	a.NotError(err)
+	filename := "./testdir/file.xml"
+
+	f, err := os.Open(filename)
+	a.NotError(err).NotNil(f)
+
+	body,ct :=formData(a, filename)
+
+	r, err := http.NewRequest(http.MethodPost, "/upload", body)
+	r.Header.Add("content-type", ct)
+	a.NotError(err).NotNil(r)
+
+	paths, err := u.Do("file", r)
+	a.NotError(err).
+		Length(paths, 1).
+		Equal(paths[0], "https://example.com/"+ "file_1.xml") // 已经 file.xml
+}
+
+func formData(a*assert.Assertion,filename string) (*bytes.Buffer,string) {
+	f, err := os.Open(filename)
+	a.NotError(err).NotNil(f)
+
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	fw, err := writer.CreateFormFile("file", filename)
@@ -73,18 +113,9 @@ func TestUpload_Do(t *testing.T) {
 	_, err = io.Copy(fw, f)
 	a.NotError(err)
 
-	err = writer.WriteField("filename", filename)
-	a.NotError(err)
-
+	ct :=writer.FormDataContentType()
 	err = writer.Close() // close writer before POST request
 	a.NotError(err)
 
-	r, err := http.NewRequest(http.MethodPost, "/upload", body)
-	r.Header.Add("content-type", writer.FormDataContentType())
-	a.NotError(err).NotNil(r)
-
-	paths, err := u.Do("file", r)
-	a.NotError(err).
-		Length(paths, 1).
-		Equal(paths[0], "https://example.com/"+path.Join(time.Now().Format(Day), "file.xml"))
+	return body,ct
 }
