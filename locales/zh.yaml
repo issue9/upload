@@ -1,0 +1,14 @@
+languages:
+    - cmn-Hans
+    - zh-Hans
+    - zh-CN
+messages:
+    - key: no upload file
+      message:
+        msg: 没有上传文件
+    - key: not allow extension
+      message:
+        msg: 不允许的上传文件类型
+    - key: the upload file is too large
+      message:
+        msg: 上传的文件过大

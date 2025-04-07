@@ -53,7 +53,7 @@ const (
 
 type localSaver struct {
 	fs        fs.FS
-	dir       string
+	dir       string // TODO: 采用 [os.Root]，需要 os.Root 实现 MkdirAll。
 	baseURL   string
 	format    string
 	filenames func(dir, filename, ext string) string

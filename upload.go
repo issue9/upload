@@ -2,10 +2,12 @@
 //
 // SPDX-License-Identifier: MIT
 
+//go:generate web locale -l=und -m -f=yaml ./
+//go:generate web update-locale -src=./locales/und.yaml -dest=./locales/zh.yaml
+
 package upload
 
 import (
-	"errors"
 	"io"
 	"io/fs"
 	"mime/multipart"
@@ -15,14 +17,15 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/issue9/localeutil"
 	"github.com/issue9/watermark"
 )
 
 // 常用错误类型
 var (
-	errNotAllowExt  = errors.New("不允许的文件上传类型")
-	errNotAllowSize = errors.New("文件上传大小超过最大设定值")
-	errNoUploadFile = errors.New("客户端没有上传文件")
+	errNotAllowExt  = localeutil.Error("not allow extension")
+	errNotAllowSize = localeutil.Error("the upload file is too large")
+	errNoUploadFile = localeutil.Error("no upload file")
 )
 
 // Upload 用于处理文件上传
