@@ -60,21 +60,19 @@ func TestUpload_Do(t *testing.T) {
 
 	u := New(s, 10*1024, "xml")
 	a.NotError(err)
-	filename := "./testdir/file.xml"
 
-	f, err := os.Open(filename)
-	a.NotError(err).NotNil(f)
-
-	body,ct :=formData(a, filename)
+	body, ct := formData(a, "./testdir/file.xml")
 
 	r, err := http.NewRequest(http.MethodPost, "/upload", body)
-	r.Header.Add("content-type", ct)
 	a.NotError(err).NotNil(r)
+	r.Header.Add("content-type", ct)
 
 	paths, err := u.Do("file", r)
 	a.NotError(err).
 		Length(paths, 1).
 		Equal(paths[0], "https://example.com/"+path.Join(time.Now().Format(Day), "file.xml"))
+
+	a.NotError(s.Delete(paths[0]))
 }
 
 func TestUpload_Do_None(t *testing.T) {
@@ -84,24 +82,22 @@ func TestUpload_Do_None(t *testing.T) {
 
 	u := New(s, 10*1024, "xml")
 	a.NotError(err)
-	filename := "./testdir/file.xml"
 
-	f, err := os.Open(filename)
-	a.NotError(err).NotNil(f)
-
-	body,ct :=formData(a, filename)
+	body, ct := formData(a, "./testdir/file.xml")
 
 	r, err := http.NewRequest(http.MethodPost, "/upload", body)
-	r.Header.Add("content-type", ct)
 	a.NotError(err).NotNil(r)
+	r.Header.Add("content-type", ct)
 
 	paths, err := u.Do("file", r)
 	a.NotError(err).
 		Length(paths, 1).
-		Equal(paths[0], "https://example.com/"+ "file_1.xml") // 已经 file.xml
+		Equal(paths[0], "https://example.com/"+"file_1.xml") // 已经有 file.xml
+
+	a.NotError(s.Delete(paths[0]))
 }
 
-func formData(a*assert.Assertion,filename string) (*bytes.Buffer,string) {
+func formData(a *assert.Assertion, filename string) (*bytes.Buffer, string) {
 	f, err := os.Open(filename)
 	a.NotError(err).NotNil(f)
 
@@ -113,9 +109,9 @@ func formData(a*assert.Assertion,filename string) (*bytes.Buffer,string) {
 	_, err = io.Copy(fw, f)
 	a.NotError(err)
 
-	ct :=writer.FormDataContentType()
+	ct := writer.FormDataContentType()
 	err = writer.Close() // close writer before POST request
 	a.NotError(err)
 
-	return body,ct
+	return body, ct
 }

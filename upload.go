@@ -44,7 +44,7 @@ func ErrNoUploadFile() error { return errNoUploadFile }
 //
 // maxSize 允许上传文件的最大尺寸，单位为 byte；
 //
-// exts 允许的扩展名，若为空，将不允许任何文件上传。
+// exts 允许的扩展名，若为空，将不允许任何文件上传；
 func New(saver Saver, maxSize int64, exts ...string) *Upload {
 	// 确保所有的后缀名都是以.作为开始符号的。
 	es := make([]string, 0, len(exts))

@@ -33,9 +33,19 @@ type Saver interface {
 	Save(file multipart.File, filename string, ext string) (string, error)
 }
 
+// Deleter 实现了删除功能的 [Saver]
+type Deleter interface {
+	Saver
+
+	// Delete 删除文件
+	//
+	// filename 由 [Saver.Save] 返回的内容。
+	Delete(filename string) error
+}
+
 // 为 [New] 的参数 format 所允许的几种取值
 const (
-	None = ""
+	None  = ""
 	Year  = "2006/"
 	Month = "2006/01/"
 	Day   = "2006/01/02/"
@@ -65,7 +75,7 @@ type localSaver struct {
 // dir 为文件夹名称，以 / 结尾，filename 为用户上传的文件名，ext 为 filename 中的扩展名部分，
 // 返回值是 dir + filename 的路径，实现者可能要调整 filename 的值，以保证在 dir 下唯一。
 // 如果为空，则会采用 [Filename] 作为默认值；
-func NewLocalSaver(dir, baseURL, format string, f func(dir, filename, ext string) string) (Saver, error) {
+func NewLocalSaver(dir, baseURL, format string, f func(dir, filename, ext string) string) (Deleter, error) {
 	// 确保 dir 最后一个字符为目录分隔符。
 	last := dir[len(dir)-1]
 	if last != '/' && last != filepath.Separator {
@@ -78,7 +88,7 @@ func NewLocalSaver(dir, baseURL, format string, f func(dir, filename, ext string
 		dir += string(filepath.Separator)
 	}
 
-	if format != Year && format != Month && format != Day &&format != None{
+	if format != Year && format != Month && format != Day && format != None {
 		panic("无效的参数 format")
 	}
 
@@ -136,6 +146,11 @@ func (s *localSaver) Save(f multipart.File, filename string, ext string) (string
 	return s.baseURL + path.Join(relDir, filepath.Base(p)), nil
 }
 
+func (s *localSaver) Delete(filename string) error {
+	filename = strings.TrimPrefix(filename, s.baseURL)
+	return os.Remove(filepath.Join(s.dir, filename))
+}
+
 // 主要是为了缩小 moveMux 的范围，只要保证在创建文件时是有效的就行。
 func (s *localSaver) createFile(dir, filename, ext string) (string, *os.File, error) {
 	s.moveMux.Lock()
@@ -154,14 +169,14 @@ func Filename(dir, s, ext string) string {
 	base := strings.TrimSuffix(s, ext)
 
 	count := 1
-	path := dir + s
+	p := dir + s
 
 RET:
-	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-		return path
+	if _, err := os.Stat(p); errors.Is(err, os.ErrNotExist) {
+		return p
 	}
 
-	path = dir + base + "_" + strconv.Itoa(count) + ext
+	p = dir + base + "_" + strconv.Itoa(count) + ext
 	count++
 	goto RET
 }
