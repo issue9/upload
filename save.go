@@ -32,6 +32,16 @@ type Saver interface {
 	Save(file multipart.File, filename string, ext string) (string, error)
 }
 
+// Deleter 实现了删除功能的 [Saver]
+type Deleter interface {
+	Saver
+
+	// Delete 删除文件
+	//
+	// filename 由 [Saver.Save] 返回的内容。
+	Delete(filename string) error
+}
+
 // 为 [New] 的参数 format 所允许的几种取值
 const (
 	None  = ""
@@ -63,7 +73,7 @@ type localSaver struct {
 // dir 为所属的文件系统，filename 为文件名部分，可能包含部分目录名称，ext 为 filename 中的扩展名部分，
 // 返回值是修正后的 filename，实现者需要保证 filename 在 dir 下是唯一的。
 // 如果为空，则会采用 [Filename] 作为默认值；
-func NewLocalSaver(root *os.Root, baseURL, format string, f func(dir fs.FS, filename, ext string) string) (Saver, error) {
+func NewLocalSaver(root *os.Root, baseURL, format string, f func(dir fs.FS, filename, ext string) string) (Deleter, error) {
 	if root == nil {
 		panic("无效的参数 root")
 	}
@@ -112,6 +122,11 @@ func (s *localSaver) Save(f multipart.File, filename, ext string) (string, error
 	}
 
 	return s.baseURL + path.Join(relDir, filepath.Base(p)), nil
+}
+
+func (s *localSaver) Delete(filename string) error {
+	filename = strings.TrimPrefix(filename, s.baseURL)
+	return s.root.Remove(filename)
 }
 
 // 主要是为了缩小 moveMux 的范围，只要保证在创建文件时是有效的就行。

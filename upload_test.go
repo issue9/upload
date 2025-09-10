@@ -65,6 +65,7 @@ func TestUpload_Do(t *testing.T) {
 
 	u := New(s, 10*1024, "xml")
 	a.NotError(err)
+
 	filename := "./testdir/file.xml"
 
 	f, err := os.Open(filename)
@@ -74,13 +75,15 @@ func TestUpload_Do(t *testing.T) {
 	body, ct := formData(a, filename)
 
 	r, err := http.NewRequest(http.MethodPost, "/upload", body)
-	r.Header.Add("content-type", ct)
 	a.NotError(err).NotNil(r)
+	r.Header.Add("content-type", ct)
 
 	paths, err := u.Do("file", r)
 	a.NotError(err).
 		Length(paths, 1).
 		Equal(paths[0], "https://example.com/"+path.Join(time.Now().Format(Day), "file.xml"))
+
+	a.NotError(s.Delete(paths[0]))
 }
 
 func TestUpload_Do_None(t *testing.T) {
@@ -93,6 +96,7 @@ func TestUpload_Do_None(t *testing.T) {
 
 	u := New(s, 10*1024, "xml")
 	a.NotError(err)
+
 	filename := "./testdir/file.xml"
 
 	f, err := os.Open(filename)
@@ -102,8 +106,8 @@ func TestUpload_Do_None(t *testing.T) {
 	body, ct := formData(a, filename)
 
 	r, err := http.NewRequest(http.MethodPost, "/upload", body)
-	r.Header.Add("content-type", ct)
 	a.NotError(err).NotNil(r)
+	r.Header.Add("content-type", ct)
 
 	paths, err := u.Do("file", r)
 	a.NotError(err).

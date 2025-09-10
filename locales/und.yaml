@@ -1,0 +1,12 @@
+languages:
+    - und
+messages:
+    - key: no upload file
+      message:
+        msg: no upload file
+    - key: not allow extension
+      message:
+        msg: not allow extension
+    - key: the upload file is too large
+      message:
+        msg: the upload file is too large
