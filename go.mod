@@ -9,3 +9,5 @@ require (
 )
 
 require golang.org/x/text v0.29.0 // indirect
+
+ignore ./example
