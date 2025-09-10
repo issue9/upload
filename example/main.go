@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015-2024 caixw
+// SPDX-FileCopyrightText: 2015-2025 caixw
 //
 // SPDX-License-Identifier: MIT
 
@@ -8,6 +8,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/issue9/upload/v3"
 )
@@ -42,19 +43,24 @@ func get(w http.ResponseWriter) {
 }
 
 func post(_ http.ResponseWriter, r *http.Request) {
-	s, err := upload.NewLocalSaver("~/uploads/", "", "2006/01/02/", upload.Filename)
+	root, err := os.OpenRoot("./uploads/")
 	if err != nil {
-		log.Println(err)
+		log.Panic(err)
+	}
+
+	s, err := upload.NewLocalSaver(root, "", upload.Day, upload.Filename)
+	if err != nil {
+		log.Panic(err)
 	}
 
 	u := upload.New(s, 1024*1024, ".txt", ".gif", ".png")
 	if err != nil {
-		log.Println(err)
+		log.Panic(err)
 	}
 
 	files, err := u.Do("field", r)
 	if err != nil {
-		log.Println(err)
+		log.Panic(err)
 	}
 
 	log.Printf("本次上传[%v]份文件：\n", len(files))
@@ -64,6 +70,7 @@ func post(_ http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	log.Println("http://localhost" + addr)
 	if err := http.ListenAndServe(addr, http.HandlerFunc(h)); err != nil {
 		log.Panic(err)
 	}

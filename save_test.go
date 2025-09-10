@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2024 caixw
+// SPDX-FileCopyrightText: 2024-2025 caixw
 //
 // SPDX-License-Identifier: MIT
 
 package upload
 
 import (
+	"os"
 	"testing"
 
 	"github.com/issue9/assert/v4"
@@ -15,9 +16,9 @@ var _ Saver = &localSaver{}
 func TestFilename(t *testing.T) {
 	a := assert.New(t, false)
 
-	f := Filename("./testdir/", "abc", "")
-	a.Equal(f, "./testdir/abc")
+	f := Filename(os.DirFS("./testdir/"), "abc", "")
+	a.Equal(f, "abc")
 
-	f = Filename("./testdir/", "file.xml", ".xml")
-	a.Equal(f, "./testdir/file_1.xml")
+	f = Filename(os.DirFS("./"), "testdir/file.xml", ".xml")
+	a.Equal(f, "testdir/file_1.xml")
 }

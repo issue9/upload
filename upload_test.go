@@ -22,23 +22,25 @@ var _ fs.FS = &Upload{}
 
 func TestNew(t *testing.T) {
 	a := assert.New(t, false)
-	s, err := NewLocalSaver("./testdir", "", Day, Filename)
+	root, err := os.OpenRoot("./testdir")
+	a.NotError(err).NotNil(root)
+
+	s, err := NewLocalSaver(root, "", Day, Filename)
 	a.NotError(err).NotNil(s)
 
 	u := New(s, 10*1024, "gif", ".png", ".GIF")
 	a.NotNil(u)
 	// 自动转换成小写，且加上最前面的.符号
-	a.Equal(u.exts, []string{".gif", ".png", ".gif"})
-	a.Equal(s.(*localSaver).dir, "./testdir"+string(os.PathSeparator))
-
-	// dir 为一个文件
-	s, err = NewLocalSaver("./testdir/file", "", Day, Filename)
-	a.Error(err).Nil(s)
+	a.Equal(u.exts, []string{".gif", ".png", ".gif"}).
+		Equal(s.(*localSaver).root, root)
 }
 
 func TestUpload_isAllowExt(t *testing.T) {
 	a := assert.New(t, false)
-	s, err := NewLocalSaver("./testdir", "", Day, Filename)
+	root, err := os.OpenRoot("./testdir")
+	a.NotError(err).NotNil(root)
+
+	s, err := NewLocalSaver(root, "", Day, Filename)
 	a.NotError(err).NotNil(s)
 
 	u := New(s, 10*1024, "gif", ".png", ".GIF")
@@ -55,7 +57,10 @@ func TestUpload_isAllowExt(t *testing.T) {
 
 func TestUpload_Do(t *testing.T) {
 	a := assert.New(t, false)
-	s, err := NewLocalSaver("./testdir", "https://example.com", Day, Filename)
+	root, err := os.OpenRoot("./testdir")
+	a.NotError(err).NotNil(root)
+
+	s, err := NewLocalSaver(root, "https://example.com", Day, Filename)
 	a.NotError(err).NotNil(s)
 
 	u := New(s, 10*1024, "xml")
@@ -64,8 +69,9 @@ func TestUpload_Do(t *testing.T) {
 
 	f, err := os.Open(filename)
 	a.NotError(err).NotNil(f)
+	defer f.Close()
 
-	body,ct :=formData(a, filename)
+	body, ct := formData(a, filename)
 
 	r, err := http.NewRequest(http.MethodPost, "/upload", body)
 	r.Header.Add("content-type", ct)
@@ -79,7 +85,10 @@ func TestUpload_Do(t *testing.T) {
 
 func TestUpload_Do_None(t *testing.T) {
 	a := assert.New(t, false)
-	s, err := NewLocalSaver("./testdir", "https://example.com", None, Filename)
+	root, err := os.OpenRoot("./testdir")
+	a.NotError(err).NotNil(root)
+
+	s, err := NewLocalSaver(root, "https://example.com", None, Filename)
 	a.NotError(err).NotNil(s)
 
 	u := New(s, 10*1024, "xml")
@@ -88,8 +97,9 @@ func TestUpload_Do_None(t *testing.T) {
 
 	f, err := os.Open(filename)
 	a.NotError(err).NotNil(f)
+	defer f.Close()
 
-	body,ct :=formData(a, filename)
+	body, ct := formData(a, filename)
 
 	r, err := http.NewRequest(http.MethodPost, "/upload", body)
 	r.Header.Add("content-type", ct)
@@ -98,10 +108,10 @@ func TestUpload_Do_None(t *testing.T) {
 	paths, err := u.Do("file", r)
 	a.NotError(err).
 		Length(paths, 1).
-		Equal(paths[0], "https://example.com/"+ "file_1.xml") // 已经 file.xml
+		Equal(paths[0], "https://example.com/"+"file_1.xml") // 已经有 file.xml
 }
 
-func formData(a*assert.Assertion,filename string) (*bytes.Buffer,string) {
+func formData(a *assert.Assertion, filename string) (*bytes.Buffer, string) {
 	f, err := os.Open(filename)
 	a.NotError(err).NotNil(f)
 
@@ -113,9 +123,9 @@ func formData(a*assert.Assertion,filename string) (*bytes.Buffer,string) {
 	_, err = io.Copy(fw, f)
 	a.NotError(err)
 
-	ct :=writer.FormDataContentType()
+	ct := writer.FormDataContentType()
 	err = writer.Close() // close writer before POST request
 	a.NotError(err)
 
-	return body,ct
+	return body, ct
 }

@@ -5,4 +5,4 @@ require (
 	github.com/issue9/watermark v1.2.5
 )
 
-go 1.21
+go 1.25.0
