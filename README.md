@@ -9,7 +9,7 @@ upload
 处理上传文件，若是图片还可以设置水印。
 
 ```go
-s, err := NewLocalSaver("~/uploads/", "2006/01/02/", nil)
+s, err := NewLocalSaver(os.OpenRoot("~/uploads/"), "2006/01/02/", nil)
 u := upload.New(s, 1024*1024*10, ".txt", ".jpg", ".png")
 u.SetWatermark(...) // 设置水印图片
 

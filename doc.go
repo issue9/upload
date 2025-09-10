@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015-2024 caixw
+// SPDX-FileCopyrightText: 2015-2025 caixw
 //
 // SPDX-License-Identifier: MIT
 
@@ -6,7 +6,7 @@
 //
 // 处理上传文件，若是图片还可以设置水印。
 //
-//	s, err := NewLocalSaver("~/uploads/", "2006/01/02/", nil)
+//	s, err := NewLocalSaver(os.OpenRoot("~/uploads/"), "2006/01/02/", nil)
 //	u := upload.New(s, 1024*1024*10, ".txt", ".jpg", ".png")
 //	u.SetWatermarkFile(...) // 可根据需要设置水印图片
 //	func(w http.ResponseWriter, r *http.Request) {
