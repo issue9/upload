@@ -11,7 +11,6 @@ import (
 	"mime/multipart"
 	"os"
 	"path"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -71,7 +70,7 @@ type localSaver struct {
 //	func(dir fs.FS, filename, ext string) string
 //
 // dir 为所属的文件系统，filename 为文件名部分，可能包含部分目录名称，ext 为 filename 中的扩展名部分，
-// 返回值是修正后的 filename，实现者需要保证 filename 在 dir 下是唯一的。
+// 返回值是修正后的 filename，实现者需要保证 filename 在 dir 下是唯一的，filename 的路径分隔符必须是 /，不随系统而改变。
 // 如果为空，则会采用 [Filename] 作为默认值；
 func NewLocalSaver(root *os.Root, baseURL, format string, f func(dir fs.FS, filename, ext string) string) (Deleter, error) {
 	if root == nil {
@@ -121,7 +120,7 @@ func (s *localSaver) Save(f multipart.File, filename, ext string) (string, error
 		return "", err
 	}
 
-	return s.baseURL + path.Join(relDir, filepath.Base(p)), nil
+	return s.baseURL + path.Join(relDir, path.Base(p)), nil
 }
 
 func (s *localSaver) Delete(filename string) error {
@@ -134,7 +133,7 @@ func (s *localSaver) createFile(relDir string, filename, ext string) (string, *o
 	s.moveMux.Lock()
 	defer s.moveMux.Unlock()
 
-	p := s.filenames(s.root.FS(), filepath.Join(relDir, filename), ext)
+	p := s.filenames(s.root.FS(), path.Join(relDir, filename), ext)
 	destFile, err := s.root.Create(p)
 	if err != nil {
 		return "", nil, err
@@ -149,14 +148,14 @@ func Filename(dir fs.FS, s, ext string) string {
 	base := strings.TrimSuffix(s, ext)
 
 	count := 1
-	path := s
+	p := s
 
 RET:
-	if _, err := fs.Stat(dir, path); errors.Is(err, os.ErrNotExist) {
-		return path
+	if _, err := fs.Stat(dir, p); errors.Is(err, os.ErrNotExist) {
+		return p
 	}
 
-	path = base + "_" + strconv.Itoa(count) + ext
+	p = base + "_" + strconv.Itoa(count) + ext
 	count++
 	goto RET
 }

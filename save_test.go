@@ -11,7 +11,10 @@ import (
 	"github.com/issue9/assert/v4"
 )
 
-var _ Saver = &localSaver{}
+var (
+	_ Saver   = &localSaver{}
+	_ Deleter = &localSaver{}
+)
 
 func TestFilename(t *testing.T) {
 	a := assert.New(t, false)
