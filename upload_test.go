@@ -80,7 +80,7 @@ func TestUpload_Do(t *testing.T) {
 	paths, err := u.Do("file", r)
 	a.NotError(err).
 		Length(paths, 1).
-		Equal(paths[0], "https://example.com/file.xml")
+		Equal(paths[0], "https://example.com/file_1.xml")
 
 		// 上传两次
 
@@ -92,7 +92,7 @@ func TestUpload_Do(t *testing.T) {
 	paths, err = u.Do("file", r)
 	a.NotError(err).
 		Length(paths, 1).
-		Equal(paths[0], "https://example.com/file_1.xml")
+		Equal(paths[0], "https://example.com/file_2.xml")
 
 	a.NotError(s.Delete(paths[0]))
 }

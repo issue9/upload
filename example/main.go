@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/issue9/upload/v4"
+	"github.com/issue9/upload/v5"
 )
 
 const addr = ":8082"

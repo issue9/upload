@@ -1,4 +1,4 @@
-module github.com/issue9/upload/v4
+module github.com/issue9/upload/v5
 
 go 1.25.0
 
