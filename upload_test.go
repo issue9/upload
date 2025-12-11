@@ -11,9 +11,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
-	"path"
 	"testing"
-	"time"
 
 	"github.com/issue9/assert/v4"
 )
@@ -25,7 +23,7 @@ func TestNew(t *testing.T) {
 	root, err := os.OpenRoot("./testdir")
 	a.NotError(err).NotNil(root)
 
-	s, err := NewLocalSaver(root, "", Day, Filename)
+	s, err := NewLocalSaver(root, "", FilenameAI)
 	a.NotError(err).NotNil(s)
 
 	u := New(s, 10*1024, "gif", ".png", ".GIF")
@@ -40,7 +38,7 @@ func TestUpload_isAllowExt(t *testing.T) {
 	root, err := os.OpenRoot("./testdir")
 	a.NotError(err).NotNil(root)
 
-	s, err := NewLocalSaver(root, "", Day, Filename)
+	s, err := NewLocalSaver(root, "", FilenameAI)
 	a.NotError(err).NotNil(s)
 
 	u := New(s, 10*1024, "gif", ".png", ".GIF")
@@ -60,7 +58,7 @@ func TestUpload_Do(t *testing.T) {
 	root, err := os.OpenRoot("./testdir")
 	a.NotError(err).NotNil(root)
 
-	s, err := NewLocalSaver(root, "https://example.com", Day, Filename)
+	s, err := NewLocalSaver(root, "https://example.com", FilenameAI)
 	a.NotError(err).NotNil(s)
 
 	u := New(s, 10*1024, "xml")
@@ -72,8 +70,9 @@ func TestUpload_Do(t *testing.T) {
 	a.NotError(err).NotNil(f)
 	defer f.Close()
 
-	body, ct := formData(a, filename)
+	// 上传一次
 
+	body, ct := formData(a, filename)
 	r, err := http.NewRequest(http.MethodPost, "/upload", body)
 	a.NotError(err).NotNil(r)
 	r.Header.Add("content-type", ct)
@@ -81,38 +80,21 @@ func TestUpload_Do(t *testing.T) {
 	paths, err := u.Do("file", r)
 	a.NotError(err).
 		Length(paths, 1).
-		Equal(paths[0], "https://example.com/"+path.Join(time.Now().Format(Day), "file.xml"))
+		Equal(paths[0], "https://example.com/file.xml")
+
+		// 上传两次
+
+	body, ct = formData(a, filename)
+	r, err = http.NewRequest(http.MethodPost, "/upload", body)
+	a.NotError(err).NotNil(r)
+	r.Header.Add("content-type", ct)
+
+	paths, err = u.Do("file", r)
+	a.NotError(err).
+		Length(paths, 1).
+		Equal(paths[0], "https://example.com/file_1.xml")
 
 	a.NotError(s.Delete(paths[0]))
-}
-
-func TestUpload_Do_None(t *testing.T) {
-	a := assert.New(t, false)
-	root, err := os.OpenRoot("./testdir")
-	a.NotError(err).NotNil(root)
-
-	s, err := NewLocalSaver(root, "https://example.com", None, Filename)
-	a.NotError(err).NotNil(s)
-
-	u := New(s, 10*1024, "xml")
-	a.NotError(err)
-
-	filename := "./testdir/file.xml"
-
-	f, err := os.Open(filename)
-	a.NotError(err).NotNil(f)
-	defer f.Close()
-
-	body, ct := formData(a, filename)
-
-	r, err := http.NewRequest(http.MethodPost, "/upload", body)
-	a.NotError(err).NotNil(r)
-	r.Header.Add("content-type", ct)
-
-	paths, err := u.Do("file", r)
-	a.NotError(err).
-		Length(paths, 1).
-		Equal(paths[0], "https://example.com/"+"file_1.xml") // 已经有 file.xml
 }
 
 func formData(a *assert.Assertion, filename string) (*bytes.Buffer, string) {

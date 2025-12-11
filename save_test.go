@@ -16,12 +16,12 @@ var (
 	_ Deleter = &localSaver{}
 )
 
-func TestFilename(t *testing.T) {
+func TestFilenameAI(t *testing.T) {
 	a := assert.New(t, false)
 
-	f := Filename(os.DirFS("./testdir/"), "abc", "")
+	f := FilenameAI(os.DirFS("./testdir/"), "abc", "")
 	a.Equal(f, "abc")
 
-	f = Filename(os.DirFS("./"), "testdir/file.xml", ".xml")
+	f = FilenameAI(os.DirFS("./"), "testdir/file.xml", ".xml")
 	a.Equal(f, "testdir/file_1.xml")
 }

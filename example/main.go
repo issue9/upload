@@ -48,7 +48,7 @@ func post(_ http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 	}
 
-	s, err := upload.NewLocalSaver(root, "", upload.Day, upload.Filename)
+	s, err := upload.NewLocalSaver(root, "", upload.FilenameAI)
 	if err != nil {
 		log.Panic(err)
 	}

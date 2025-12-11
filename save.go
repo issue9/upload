@@ -14,7 +14,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 )
 
 const presetMode = fs.ModePerm
@@ -41,20 +40,11 @@ type Deleter interface {
 	Delete(filename string) error
 }
 
-// 为 [New] 的参数 format 所允许的几种取值
-const (
-	None  = ""
-	Year  = "2006/"
-	Month = "2006/01/"
-	Day   = "2006/01/02/"
-)
-
 type localSaver struct {
-	root      *os.Root
-	baseURL   string
-	format    string
-	filenames func(fs fs.FS, filename, ext string) string
-	moveMux   sync.Mutex
+	root        *os.Root
+	baseURL     string
+	filenames   func(fs fs.FS, filename, ext string) string
+	filenameMux sync.Mutex
 }
 
 // NewLocalSaver 实现了一个基于本地文件系统的 [Saver] 接口
@@ -63,26 +53,20 @@ type localSaver struct {
 //
 // baseURL 为上传的文件生成访问地址的前缀；
 //
-// format 子目录的格式，只能是时间格式，取值只能是 [None]、[Year]、[Month] 和 [Day]；
-//
 // f 设置文件名的生成方式，要求文件在同一目录下具有唯一性，其类型如下：
 //
 //	func(dir fs.FS, filename, ext string) string
 //
-// dir 为所属的文件系统，filename 为文件名部分，可能包含部分目录名称，ext 为 filename 中的扩展名部分，
+// dir 为所属的文件系统，filename 用户上传的文件名，ext 为 filename 中的扩展名部分，
 // 返回值是修正后的 filename，实现者需要保证 filename 在 dir 下是唯一的，filename 的路径分隔符必须是 /，不随系统而改变。
-// 如果为空，则会采用 [Filename] 作为默认值；
-func NewLocalSaver(root *os.Root, baseURL, format string, f func(dir fs.FS, filename, ext string) string) (Deleter, error) {
+// 如果为空，则会采用 [FilenameAI] 作为默认值；
+func NewLocalSaver(root *os.Root, baseURL string, f func(dir fs.FS, filename, ext string) string) (Deleter, error) {
 	if root == nil {
 		panic("无效的参数 root")
 	}
 
-	if format != Year && format != Month && format != Day && format != None {
-		panic("无效的参数 format")
-	}
-
 	if f == nil {
-		f = Filename
+		f = FilenameAI
 	}
 
 	if baseURL != "" && baseURL[len(baseURL)-1] != '/' {
@@ -92,7 +76,6 @@ func NewLocalSaver(root *os.Root, baseURL, format string, f func(dir fs.FS, file
 	return &localSaver{
 		root:      root,
 		baseURL:   baseURL,
-		format:    format,
 		filenames: f,
 	}, nil
 }
@@ -100,17 +83,14 @@ func NewLocalSaver(root *os.Root, baseURL, format string, f func(dir fs.FS, file
 func (s *localSaver) Open(name string) (fs.File, error) { return s.root.Open(name) }
 
 func (s *localSaver) Save(f multipart.File, filename, ext string) (string, error) {
-	var relDir string
-	if s.format != None {
-		relDir = time.Now().Format(s.format)
-	}
-	if relDir != "" {
-		if err := s.root.MkdirAll(relDir, presetMode); err != nil { // 若路径不存在，则创建
-			return "", err
-		}
+	p := s.createFilename(filename, ext)
+
+	dir := path.Dir(p)
+	if err := s.root.MkdirAll(dir, presetMode); err != nil {
+		return "", err
 	}
 
-	p, destFile, err := s.createFile(relDir, filename, ext)
+	destFile, err := s.root.Create(p)
 	if err != nil {
 		return "", err
 	}
@@ -128,23 +108,19 @@ func (s *localSaver) Delete(filename string) error {
 	return s.root.Remove(filename)
 }
 
-// 主要是为了缩小 moveMux 的范围，只要保证在创建文件时是有效的就行。
-func (s *localSaver) createFile(relDir string, filename, ext string) (string, *os.File, error) {
-	s.moveMux.Lock()
-	defer s.moveMux.Unlock()
-
-	p := s.filenames(s.root.FS(), path.Join(relDir, filename), ext)
-	destFile, err := s.root.Create(p)
-	if err != nil {
-		return "", nil, err
-	}
-	return p, destFile, nil
+// 主要是为了缩小 filenameMux 的范围。
+func (s *localSaver) createFilename(filename, ext string) string {
+	s.filenameMux.Lock()
+	defer s.filenameMux.Unlock()
+	return s.filenames(s.root.FS(), filename, ext)
 }
 
-// Filename 在 dir 下为 s 生成唯一文件名
+// FilenameAI 在 dir 下为 s 生成唯一文件名
+//
+// 如果已经存在同名的文件，会在文件后以数字形式自增。
 //
 // s 包含了扩展名的文件名；
-func Filename(dir fs.FS, s, ext string) string {
+func FilenameAI(dir fs.FS, s, ext string) string {
 	base := strings.TrimSuffix(s, ext)
 
 	count := 1
