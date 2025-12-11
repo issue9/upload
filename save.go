@@ -120,7 +120,7 @@ func (s *localSaver) Save(f multipart.File, filename, ext string) (string, error
 		return "", err
 	}
 
-	return s.baseURL + path.Join(relDir, path.Base(p)), nil
+	return s.baseURL + p, nil
 }
 
 func (s *localSaver) Delete(filename string) error {
