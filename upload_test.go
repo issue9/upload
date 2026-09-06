@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015-2025 caixw
+// SPDX-FileCopyrightText: 2015-2026 caixw
 //
 // SPDX-License-Identifier: MIT
 
@@ -13,7 +13,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/issue9/assert/v4"
+	"github.com/issue9/assert/v5"
 )
 
 var _ fs.FS = &Upload{}

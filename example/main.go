@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015-2025 caixw
+// SPDX-FileCopyrightText: 2015-2026 caixw
 //
 // SPDX-License-Identifier: MIT
 
@@ -54,9 +54,6 @@ func post(_ http.ResponseWriter, r *http.Request) {
 	}
 
 	u := upload.New(s, 1024*1024, ".txt", ".gif", ".png")
-	if err != nil {
-		log.Panic(err)
-	}
 
 	files, err := u.Do("field", r)
 	if err != nil {
